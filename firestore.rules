@@ -1,0 +1,108 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Entity Validations
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'createdAt']) &&
+             data.keys().size() <= 10 &&
+             data.email is string &&
+             data.createdAt == request.time;
+    }
+
+    function isValidBusiness(data) {
+      return data.keys().hasAll(['ownerId', 'name', 'createdAt']) &&
+             data.ownerId == request.auth.uid &&
+             data.name is string && data.name.size() <= 200 &&
+             data.createdAt == request.time;
+    }
+
+    function isValidContent(data) {
+      return data.keys().hasAll(['businessId', 'type', 'content', 'createdAt']) &&
+             data.businessId is string &&
+             data.type in ['slogan', 'social_post', 'newsletter', 'concept_logo', 'ad_copy'] &&
+             data.content is string && data.content.size() <= 10000 &&
+             data.createdAt == request.time;
+    }
+
+    function isValidLead(data) {
+      return data.keys().hasAll(['businessId', 'name', 'createdAt']) &&
+             data.businessId is string &&
+             data.name is string && data.name.size() <= 200 &&
+             data.createdAt == request.time;
+    }
+
+    // Rules
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && isValidUser(incoming()) && 
+                    incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'onboardingComplete']);
+    }
+
+    match /analyses/{analysisId} {
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isEmailVerified() && isValidId(analysisId) && 
+                    incoming().ownerId == request.auth.uid &&
+                    incoming().createdAt == request.time;
+      allow delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    match /businesses/{businessId} {
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow get: if isOwner(existing().ownerId);
+      allow create: if isEmailVerified() && isValidBusiness(incoming()) && isValidId(businessId);
+      allow update: if isOwner(existing().ownerId) && isValidBusiness(incoming()) &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['name', 'description', 'industry', 'location', 'valueProposition', 'buyerPersonas', 'competitors']);
+      allow delete: if isOwner(existing().ownerId);
+
+      match /content/{contentId} {
+        allow list: if isOwner(get(/databases/$(database)/documents/businesses/$(businessId)).data.ownerId);
+        allow get: if isOwner(get(/databases/$(database)/documents/businesses/$(businessId)).data.ownerId);
+        allow create: if isOwner(get(/databases/$(database)/documents/businesses/$(businessId)).data.ownerId) && isValidContent(incoming());
+        allow update: if isOwner(get(/databases/$(database)/documents/businesses/$(businessId)).data.ownerId) && isValidContent(incoming()) &&
+                      incoming().diff(existing()).affectedKeys().hasOnly(['content', 'metadata']);
+        allow delete: if isOwner(get(/databases/$(database)/documents/businesses/$(businessId)).data.ownerId);
+      }
+
+      match /leads/{leadId} {
+        allow list: if isOwner(get(/databases/$(database)/documents/businesses/$(businessId)).data.ownerId);
+        allow get: if isOwner(get(/databases/$(database)/documents/businesses/$(businessId)).data.ownerId);
+        allow create: if isOwner(get(/databases/$(database)/documents/businesses/$(businessId)).data.ownerId) && isValidLead(incoming());
+        allow update: if isOwner(get(/databases/$(database)/documents/businesses/$(businessId)).data.ownerId) && isValidLead(incoming()) &&
+                      incoming().diff(existing()).affectedKeys().hasOnly(['status']);
+        allow delete: if isOwner(get(/databases/$(database)/documents/businesses/$(businessId)).data.ownerId);
+      }
+    }
+  }
+}

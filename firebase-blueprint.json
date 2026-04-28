@@ -1,0 +1,86 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "onboardingComplete": { "type": "boolean" }
+      },
+      "required": ["email", "createdAt"]
+    },
+    "Business": {
+      "title": "Business",
+      "description": "Analyzed business entity",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string" },
+        "name": { "type": "string" },
+        "website": { "type": "string" },
+        "description": { "type": "string" },
+        "industry": { "type": "string" },
+        "location": { "type": "string" },
+        "valueProposition": { "type": "string" },
+        "buyerPersonas": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "competitors": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ownerId", "name", "createdAt"]
+    },
+    "MarketingContent": {
+      "title": "Marketing Content",
+      "description": "Generated marketing assets",
+      "type": "object",
+      "properties": {
+        "businessId": { "type": "string" },
+        "type": { "type": "string", "enum": ["slogan", "social_post", "newsletter", "concept_logo", "ad_copy"] },
+        "content": { "type": "string" },
+        "metadata": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["businessId", "type", "content", "createdAt"]
+    },
+    "Lead": {
+      "title": "Lead",
+      "description": "Potential client or lead",
+      "type": "object",
+      "properties": {
+        "businessId": { "type": "string" },
+        "name": { "type": "string" },
+        "company": { "type": "string" },
+        "email": { "type": "string" },
+        "industry": { "type": "string" },
+        "status": { "type": "string", "enum": ["new", "contacted", "converted", "ignored"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["businessId", "name", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/businesses/{businessId}": {
+      "schema": "Business",
+      "description": "Businesses analyzed by users"
+    },
+    "/businesses/{businessId}/content/{contentId}": {
+      "schema": "MarketingContent",
+      "description": "Generated content for a business"
+    },
+    "/businesses/{businessId}/leads/{leadId}": {
+      "schema": "Lead",
+      "description": "Leads discovered for a business"
+    }
+  }
+}
