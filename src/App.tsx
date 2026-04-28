@@ -76,11 +76,11 @@ export default function App() {
   };
 
   if (loading) return (
-    <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
+    <div className="h-screen w-screen flex flex-col items-center justify-center bg-white gap-4">
       <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }} className="text-indigo-600">
         <Sparkles size={48} />
       </motion.div>
-      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Iniciando sistema...</span>
+      <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em] animate-pulse">Cargando MarketFlow AI...</span>
     </div>
   );
 
