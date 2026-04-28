@@ -70,7 +70,7 @@ export function Dashboard() {
       trend: '+22%', 
       icon: TrendingUp,
       confidence: 88,
-      origin: 'Predictivo Marketix AI',
+      origin: 'Predictivo MarketFlow AI',
       formula: 'LTV Estimado / CAC'
     },
   ];

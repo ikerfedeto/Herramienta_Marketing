@@ -28,12 +28,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin 
             <div className="p-2 bg-indigo-600 rounded-lg shadow-lg shadow-indigo-200">
               <Sparkles className="text-white" size={20} />
             </div>
-            <span className="text-xl font-black tracking-tighter text-slate-900">Marketix<span className="text-indigo-600">AI</span></span>
+            <span className="text-xl font-black tracking-tighter text-slate-900">MarketFlow<span className="text-indigo-600">AI</span></span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
             <a href="#features" className="hover:text-indigo-600 transition-colors">Funcionalidades</a>
             <a href="#how-it-works" className="hover:text-indigo-600 transition-colors">Cómo funciona</a>
-            <a href="#pricing" className="hover:text-indigo-600 transition-colors">Precios</a>
           </div>
           <div className="flex items-center gap-4">
             <button 
@@ -240,6 +239,54 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin 
         </div>
       </section>
 
+      {/* How it Works */}
+      <section id="how-it-works" className="py-32 bg-slate-950 text-white overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600/10 rounded-full blur-[120px]"></div>
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          <div className="text-center max-w-2xl mx-auto mb-20">
+            <h2 className="text-xs font-black text-indigo-400 uppercase tracking-[0.3em] mb-4">Metodología</h2>
+            <h3 className="text-5xl font-black tracking-tight mb-6">De un dominio a una <span className="text-indigo-400">estrategia ganadora</span> en 3 pasos.</h3>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-12 relative">
+             {/* Connection Line (Desktop) */}
+             <div className="hidden md:block absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-800 to-transparent -translate-y-1/2"></div>
+             
+             {[
+               {
+                 step: '01',
+                 title: 'Introduce el Dominio',
+                 desc: 'Solo necesitas la URL del sitio web de tu lead o posible cliente. No requiere integraciones complejas.',
+                 icon: <Target className="text-white" size={24} />
+               },
+               {
+                 step: '02',
+                 title: 'IA Deep Scan',
+                 desc: 'Nuestra IA analiza el stack técnico, la intensidad de marketing, vacíos de seguridad y ganchos de venta.',
+                 icon: <Brain className="text-white" size={24} />
+               },
+               {
+                 step: '03',
+                 title: 'Cierre de Venta',
+                 desc: 'Recibe un reporte accionable con frases de apertura personalizadas y ROI estimado para tu propuesta.',
+                 icon: <Zap className="text-white" size={24} />
+               }
+             ].map((s, i) => (
+               <div key={i} className="relative group">
+                  <div className="mb-8 relative z-10">
+                    <div className="w-16 h-16 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-2xl shadow-indigo-500/20 group-hover:scale-110 transition-transform duration-500">
+                      {s.icon}
+                    </div>
+                    <div className="absolute -top-4 -right-4 text-4xl font-black text-white/5">{s.step}</div>
+                  </div>
+                  <h4 className="text-2xl font-black mb-4">{s.title}</h4>
+                  <p className="text-slate-400 font-medium leading-relaxed">{s.desc}</p>
+               </div>
+             ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-32">
         <div className="max-w-5xl mx-auto px-4">
@@ -284,14 +331,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin 
             <div className="p-2 bg-slate-900 rounded-lg">
               <Sparkles className="text-white" size={16} />
             </div>
-            <span className="text-lg font-black tracking-tighter text-slate-900">Marketix<span className="text-indigo-600">AI</span></span>
+            <span className="text-lg font-black tracking-tighter text-slate-900">MarketFlow<span className="text-indigo-600">AI</span></span>
           </div>
           <div className="flex gap-8 text-xs font-bold text-slate-400 uppercase tracking-widest">
             <a href="#" className="hover:text-slate-900">Privacidad</a>
             <a href="#" className="hover:text-slate-900">Términos</a>
             <a href="#" className="hover:text-slate-900">Contacto</a>
           </div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">© 2024 Marketix AI. Intelligence for Scale.</p>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">© 2024 MarketFlow AI. Intelligence for Scale.</p>
         </div>
       </footer>
     </div>

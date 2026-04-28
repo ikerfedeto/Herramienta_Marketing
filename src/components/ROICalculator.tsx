@@ -74,7 +74,7 @@ export function ROICalculator() {
       <div className="text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-full text-indigo-600">
           <Zap size={14} className="fill-current" />
-          <span className="text-[10px] font-black uppercase tracking-widest">Marketix Engine v2.0</span>
+          <span className="text-[10px] font-black uppercase tracking-widest">MarketFlow Engine v2.0</span>
         </div>
         <h2 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900">Predictor de ROI <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Inteligente</span></h2>
         <p className="text-slate-500 max-w-2xl mx-auto font-medium text-lg">
