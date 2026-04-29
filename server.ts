@@ -26,6 +26,8 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 const MODEL = "gemini-3-flash-preview";
 const IMAGE_MODEL = "gemini-2.5-flash-image";
 
+// ─── Rate Limiting ────────────────────────────────────────────
+
 const requestCounts = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 30;
@@ -57,6 +59,8 @@ function rateLimit(
   next();
 }
 
+// ─── Security Headers ─────────────────────────────────────────
+
 function securityHeaders(
   _req: express.Request,
   res: express.Response,
@@ -70,15 +74,74 @@ function securityHeaders(
     "Permissions-Policy",
     "camera=(), microphone=(), geolocation=()"
   );
+  res.setHeader(
+    "Strict-Transport-Security",
+    "max-age=31536000; includeSubDomains"
+  );
   next();
 }
+
+// ─── Request Logger ───────────────────────────────────────────
+
+function requestLogger(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+): void {
+  const start = Date.now();
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    const status = res.statusCode;
+    const method = req.method;
+    const url = req.originalUrl;
+    const color = status >= 400 ? "\x1b[31m" : status >= 300 ? "\x1b[33m" : "\x1b[32m";
+    console.log(
+      `${color}${method}\x1b[0m ${url} \x1b[90m${status} ${duration}ms\x1b[0m`
+    );
+  });
+  next();
+}
+
+// ─── AI Request Timeout ───────────────────────────────────────
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`[TIMEOUT] ${label} excedió ${ms}ms`));
+    }, ms);
+    promise
+      .then((val) => { clearTimeout(timer); resolve(val); })
+      .catch((err) => { clearTimeout(timer); reject(err); });
+  });
+}
+
+const AI_TIMEOUT_MS = 60_000;
+
+// ─── Server ───────────────────────────────────────────────────
 
 async function startServer() {
   const app = express();
   const PORT = parseInt(process.env.PORT || "3000", 10);
 
+  app.use(requestLogger);
   app.use(securityHeaders);
   app.use(express.json({ limit: "1mb" }));
+
+  // CORS for API routes
+  app.use("/api", (_req, res, next) => {
+    const origin = _req.headers.origin;
+    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [];
+    if (origin && (allowedOrigins.includes(origin) || process.env.NODE_ENV !== "production")) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+    }
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    if (_req.method === "OPTIONS") {
+      res.status(204).end();
+      return;
+    }
+    next();
+  });
 
   // ─── API Routes ────────────────────────────────────────────
 
@@ -87,6 +150,7 @@ async function startServer() {
       status: "ok",
       version: "2.0.0",
       timestamp: new Date().toISOString(),
+      uptime: Math.floor(process.uptime()),
     });
   });
 
@@ -117,109 +181,113 @@ async function startServer() {
         IMPORTANTE: Simula un análisis profundo de tecnologías (CMS, Píxeles), presencia en Ads (Facebook/Google) y gaps de SEO.
       `;
 
-      const response = await ai.models.generateContent({
-        model: MODEL,
-        contents: prompt,
-        config: {
-          systemInstruction:
-            "Eres un analista de SaaS experto. Responde siempre en JSON válido y en ESPAÑOL.",
-          responseMimeType: "application/json",
-          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              empresa: {
-                type: Type.OBJECT,
-                properties: {
-                  nombre: { type: Type.STRING },
-                  sector: { type: Type.STRING },
-                  localizacion: { type: Type.STRING },
-                  resumen: { type: Type.STRING },
-                  identidad_visual: { type: Type.STRING },
-                  cliente_ideal: { type: Type.STRING },
-                },
-                required: ["nombre", "sector", "localizacion", "resumen"],
-              },
-              contacto: {
-                type: Type.OBJECT,
-                properties: {
-                  email: { type: Type.STRING },
-                  telefono: { type: Type.STRING },
-                  rrss: { type: Type.ARRAY, items: { type: Type.STRING } },
-                },
-              },
-              tecnologia: {
-                type: Type.OBJECT,
-                properties: {
-                  cms: { type: Type.STRING },
-                  tracking: {
-                    type: Type.ARRAY,
-                    items: { type: Type.STRING },
-                  },
-                  marketing_automation: { type: Type.STRING },
-                  velocidad: { type: Type.STRING },
-                  seguridad_ssl: { type: Type.BOOLEAN },
-                  cumplimiento_gdpr: { type: Type.STRING },
-                },
-              },
-              senales_crecimiento: {
-                type: Type.OBJECT,
-                properties: {
-                  contratacion_activa: { type: Type.BOOLEAN },
-                  expansion_geografica: { type: Type.STRING },
-                  actualizacion_reciente: { type: Type.STRING },
-                },
-              },
-              marketing_intensity: {
-                type: Type.OBJECT,
-                properties: {
-                  seo_score: { type: Type.NUMBER },
-                  ads_presence: { type: Type.STRING },
-                  content_velocity: { type: Type.STRING },
-                },
-              },
-              hipotesis_crecimiento: {
-                type: Type.OBJECT,
-                properties: {
-                  problema_raiz: { type: Type.STRING },
-                  solucion_propuesta: { type: Type.STRING },
-                  roi_estimado: { type: Type.STRING },
-                },
-              },
-              analisis_oportunidades: {
-                type: Type.ARRAY,
-                items: {
+      const response = await withTimeout(
+        ai.models.generateContent({
+          model: MODEL,
+          contents: prompt,
+          config: {
+            systemInstruction:
+              "Eres un analista de SaaS experto. Responde siempre en JSON válido y en ESPAÑOL.",
+            responseMimeType: "application/json",
+            thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                empresa: {
                   type: Type.OBJECT,
                   properties: {
-                    area: { type: Type.STRING },
-                    hallazgo: { type: Type.STRING },
-                    oportunidad: { type: Type.STRING },
-                    prioridad: { type: Type.STRING },
-                    impacto_negocio: { type: Type.STRING },
+                    nombre: { type: Type.STRING },
+                    sector: { type: Type.STRING },
+                    localizacion: { type: Type.STRING },
+                    resumen: { type: Type.STRING },
+                    identidad_visual: { type: Type.STRING },
+                    cliente_ideal: { type: Type.STRING },
+                  },
+                  required: ["nombre", "sector", "localizacion", "resumen"],
+                },
+                contacto: {
+                  type: Type.OBJECT,
+                  properties: {
+                    email: { type: Type.STRING },
+                    telefono: { type: Type.STRING },
+                    rrss: { type: Type.ARRAY, items: { type: Type.STRING } },
                   },
                 },
-              },
-              scores: {
-                type: Type.OBJECT,
-                properties: {
-                  salud_digital: { type: Type.NUMBER },
-                  probabilidad_conversion: { type: Type.NUMBER },
-                  nivel_inversion_estimado: { type: Type.STRING },
+                tecnologia: {
+                  type: Type.OBJECT,
+                  properties: {
+                    cms: { type: Type.STRING },
+                    tracking: {
+                      type: Type.ARRAY,
+                      items: { type: Type.STRING },
+                    },
+                    marketing_automation: { type: Type.STRING },
+                    velocidad: { type: Type.STRING },
+                    seguridad_ssl: { type: Type.BOOLEAN },
+                    cumplimiento_gdpr: { type: Type.STRING },
+                  },
                 },
-              },
-              outreach_automatizado: {
-                type: Type.OBJECT,
-                properties: {
-                  email_asunto: { type: Type.STRING },
-                  email_cuerpo: { type: Type.STRING },
-                  linkedin_invite: { type: Type.STRING },
+                senales_crecimiento: {
+                  type: Type.OBJECT,
+                  properties: {
+                    contratacion_activa: { type: Type.BOOLEAN },
+                    expansion_geografica: { type: Type.STRING },
+                    actualizacion_reciente: { type: Type.STRING },
+                  },
                 },
+                marketing_intensity: {
+                  type: Type.OBJECT,
+                  properties: {
+                    seo_score: { type: Type.NUMBER },
+                    ads_presence: { type: Type.STRING },
+                    content_velocity: { type: Type.STRING },
+                  },
+                },
+                hipotesis_crecimiento: {
+                  type: Type.OBJECT,
+                  properties: {
+                    problema_raiz: { type: Type.STRING },
+                    solucion_propuesta: { type: Type.STRING },
+                    roi_estimado: { type: Type.STRING },
+                  },
+                },
+                analisis_oportunidades: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      area: { type: Type.STRING },
+                      hallazgo: { type: Type.STRING },
+                      oportunidad: { type: Type.STRING },
+                      prioridad: { type: Type.STRING },
+                      impacto_negocio: { type: Type.STRING },
+                    },
+                  },
+                },
+                scores: {
+                  type: Type.OBJECT,
+                  properties: {
+                    salud_digital: { type: Type.NUMBER },
+                    probabilidad_conversion: { type: Type.NUMBER },
+                    nivel_inversion_estimado: { type: Type.STRING },
+                  },
+                },
+                outreach_automatizado: {
+                  type: Type.OBJECT,
+                  properties: {
+                    email_asunto: { type: Type.STRING },
+                    email_cuerpo: { type: Type.STRING },
+                    linkedin_invite: { type: Type.STRING },
+                  },
+                },
+                hot_lead_score: { type: Type.NUMBER },
               },
-              hot_lead_score: { type: Type.NUMBER },
             },
           },
-        },
-      });
+        }),
+        AI_TIMEOUT_MS,
+        "analyze-business"
+      );
 
       if (!response.text) {
         res.status(500).json({
@@ -233,10 +301,11 @@ async function startServer() {
       res.json({ success: true, data });
     } catch (error) {
       console.error("[API] analyze-business error:", error);
-      res.status(500).json({
-        success: false,
-        error: "Error al analizar el negocio. Inténtalo de nuevo.",
-      });
+      const message =
+        error instanceof Error && error.message.includes("[TIMEOUT]")
+          ? "El análisis tardó demasiado. Inténtalo de nuevo."
+          : "Error al analizar el negocio. Inténtalo de nuevo.";
+      res.status(500).json({ success: false, error: message });
     }
   });
 
@@ -293,23 +362,28 @@ async function startServer() {
         - Mockups Sugeridos (cómo se vería en tarjetas, web o merch).`;
       }
 
-      const response = await ai.models.generateContent({
-        model: MODEL,
-        contents: prompt,
-        config: {
-          systemInstruction:
-            "Eres el jefe de estrategia creativa de una agencia boutique. Tu trabajo es entregar piezas de marketing listas para producción que impresionen a directivos. Responde siempre en español.",
-          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
-        },
-      });
+      const response = await withTimeout(
+        ai.models.generateContent({
+          model: MODEL,
+          contents: prompt,
+          config: {
+            systemInstruction:
+              "Eres el jefe de estrategia creativa de una agencia boutique. Tu trabajo es entregar piezas de marketing listas para producción que impresionen a directivos. Responde siempre en español.",
+            thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+          },
+        }),
+        AI_TIMEOUT_MS,
+        "generate-content"
+      );
 
       res.json({ success: true, data: response.text || "" });
     } catch (error) {
       console.error("[API] generate-content error:", error);
-      res.status(500).json({
-        success: false,
-        error: "Error al generar contenido. Inténtalo de nuevo.",
-      });
+      const message =
+        error instanceof Error && error.message.includes("[TIMEOUT]")
+          ? "La generación tardó demasiado. Inténtalo de nuevo."
+          : "Error al generar contenido. Inténtalo de nuevo.";
+      res.status(500).json({ success: false, error: message });
     }
   });
 
@@ -342,11 +416,15 @@ async function startServer() {
           "A modern, abstract digital background for a corporate email, elegant gradients, tech-forward, clean space for text, professional and trust-building.";
       }
 
-      const response = await ai.models.generateContent({
-        model: IMAGE_MODEL,
-        contents: { parts: [{ text: prompt }] },
-        config: { imageConfig: { aspectRatio: "1:1" } },
-      });
+      const response = await withTimeout(
+        ai.models.generateContent({
+          model: IMAGE_MODEL,
+          contents: { parts: [{ text: prompt }] },
+          config: { imageConfig: { aspectRatio: "1:1" } },
+        }),
+        AI_TIMEOUT_MS,
+        "generate-image"
+      );
 
       if (response.candidates?.[0]?.content?.parts) {
         for (const part of response.candidates[0].content.parts) {
@@ -363,10 +441,11 @@ async function startServer() {
       res.json({ success: true, data: null });
     } catch (error) {
       console.error("[API] generate-image error:", error);
-      res.status(500).json({
-        success: false,
-        error: "Error al generar imagen. Inténtalo de nuevo.",
-      });
+      const message =
+        error instanceof Error && error.message.includes("[TIMEOUT]")
+          ? "La generación de imagen tardó demasiado. Inténtalo de nuevo."
+          : "Error al generar imagen. Inténtalo de nuevo.";
+      res.status(500).json({ success: false, error: message });
     }
   });
 
@@ -406,69 +485,74 @@ async function startServer() {
         REQUISITOS: Todo en ESPAÑOL. Responde en JSON.
       `;
 
-      const response = await ai.models.generateContent({
-        model: MODEL,
-        contents: prompt,
-        config: {
-          systemInstruction:
-            "Eres el jefe de analítica de una agencia de marketing boutique. Tus predicciones son realistas y basadas en datos de mercado reales.",
-          responseMimeType: "application/json",
-          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              escenarios: {
-                type: Type.OBJECT,
-                properties: {
-                  conservador: {
-                    type: Type.OBJECT,
-                    properties: {
-                      roi: { type: Type.NUMBER },
-                      revenue: { type: Type.NUMBER },
-                      conversiones: { type: Type.NUMBER },
-                      cpa: { type: Type.NUMBER },
+      const response = await withTimeout(
+        ai.models.generateContent({
+          model: MODEL,
+          contents: prompt,
+          config: {
+            systemInstruction:
+              "Eres el jefe de analítica de una agencia de marketing boutique. Tus predicciones son realistas y basadas en datos de mercado reales.",
+            responseMimeType: "application/json",
+            thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                escenarios: {
+                  type: Type.OBJECT,
+                  properties: {
+                    conservador: {
+                      type: Type.OBJECT,
+                      properties: {
+                        roi: { type: Type.NUMBER },
+                        revenue: { type: Type.NUMBER },
+                        conversiones: { type: Type.NUMBER },
+                        cpa: { type: Type.NUMBER },
+                      },
                     },
-                  },
-                  base: {
-                    type: Type.OBJECT,
-                    properties: {
-                      roi: { type: Type.NUMBER },
-                      revenue: { type: Type.NUMBER },
-                      conversiones: { type: Type.NUMBER },
-                      cpa: { type: Type.NUMBER },
+                    base: {
+                      type: Type.OBJECT,
+                      properties: {
+                        roi: { type: Type.NUMBER },
+                        revenue: { type: Type.NUMBER },
+                        conversiones: { type: Type.NUMBER },
+                        cpa: { type: Type.NUMBER },
+                      },
                     },
-                  },
-                  optimista: {
-                    type: Type.OBJECT,
-                    properties: {
-                      roi: { type: Type.NUMBER },
-                      revenue: { type: Type.NUMBER },
-                      conversiones: { type: Type.NUMBER },
-                      cpa: { type: Type.NUMBER },
+                    optimista: {
+                      type: Type.OBJECT,
+                      properties: {
+                        roi: { type: Type.NUMBER },
+                        revenue: { type: Type.NUMBER },
+                        conversiones: { type: Type.NUMBER },
+                        cpa: { type: Type.NUMBER },
+                      },
                     },
                   },
                 },
+                analisis_detallado: { type: Type.STRING },
+                recomendaciones: {
+                  type: Type.ARRAY,
+                  items: { type: Type.STRING },
+                },
+                score_confianza: { type: Type.NUMBER },
+                break_even_days: { type: Type.NUMBER },
               },
-              analisis_detallado: { type: Type.STRING },
-              recomendaciones: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING },
-              },
-              score_confianza: { type: Type.NUMBER },
-              break_even_days: { type: Type.NUMBER },
             },
           },
-        },
-      });
+        }),
+        AI_TIMEOUT_MS,
+        "predict-roi"
+      );
 
       const data = JSON.parse(response.text || "{}");
       res.json({ success: true, data });
     } catch (error) {
       console.error("[API] predict-roi error:", error);
-      res.status(500).json({
-        success: false,
-        error: "Error al predecir ROI. Inténtalo de nuevo.",
-      });
+      const message =
+        error instanceof Error && error.message.includes("[TIMEOUT]")
+          ? "La predicción tardó demasiado. Inténtalo de nuevo."
+          : "Error al predecir ROI. Inténtalo de nuevo.";
+      res.status(500).json({ success: false, error: message });
     }
   });
 
@@ -482,16 +566,48 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
+    app.use(
+      express.static(distPath, {
+        maxAge: "1d",
+        etag: true,
+      })
+    );
     app.get("*", (_req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`[MarketFlow AI] Server running on http://localhost:${PORT}`);
-    console.log(`[MarketFlow AI] Environment: ${process.env.NODE_ENV || "development"}`);
+  const server = app.listen(PORT, "0.0.0.0", () => {
+    console.log(`\n  \x1b[36m[MarketFlow AI]\x1b[0m Server running on \x1b[4mhttp://localhost:${PORT}\x1b[0m`);
+    console.log(`  \x1b[36m[MarketFlow AI]\x1b[0m Environment: \x1b[33m${process.env.NODE_ENV || "development"}\x1b[0m\n`);
   });
+
+  // ─── Graceful Shutdown ──────────────────────────────────────
+
+  const shutdown = (signal: string) => {
+    console.log(`\n  \x1b[33m[MarketFlow AI]\x1b[0m Received ${signal}, shutting down gracefully...`);
+    server.close(() => {
+      console.log("  \x1b[32m[MarketFlow AI]\x1b[0m Server closed.\n");
+      process.exit(0);
+    });
+    setTimeout(() => {
+      console.error("  \x1b[31m[MarketFlow AI]\x1b[0m Forced shutdown after timeout.\n");
+      process.exit(1);
+    }, 10_000);
+  };
+
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
+
+  // Clean up stale rate limit entries every 5 minutes
+  setInterval(() => {
+    const now = Date.now();
+    for (const [ip, entry] of requestCounts) {
+      if (now > entry.resetAt) {
+        requestCounts.delete(ip);
+      }
+    }
+  }, 5 * 60_000);
 }
 
 startServer().catch((err) => {

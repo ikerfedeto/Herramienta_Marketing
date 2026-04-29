@@ -68,13 +68,7 @@ export function Analyzer() {
     setStep('Iniciando rastreo web...');
 
     try {
-      setStep('Enriqueciendo datos vía Google Search...');
-      await new Promise(r => setTimeout(r, 1000));
-      
-      setStep('Analizando tecnologías y píxeles...');
-      await new Promise(r => setTimeout(r, 800));
-
-      setStep('Ejecutando motores de IA de Marketing...');
+      setStep('Analizando con IA de Marketing...');
       const data = await analyzeBusiness(input, description);
       
       console.log('Análisis completado:', data);
@@ -386,7 +380,7 @@ export function Analyzer() {
                     <Phone size={12} className="text-slate-300 shrink-0" /> {result?.contacto?.telefono || 'N/A'}
                   </div>
                   <div className="flex flex-wrap gap-1 mt-2">
-                    {result?.contacto?.rrss?.slice(0, 3).map((r: string, i: number) => (
+                    {result?.contacto?.rrss?.slice(0, 3).map((r, i) => (
                       <span key={i} className="px-2 py-0.5 bg-slate-50 border border-slate-100 rounded text-[8px] font-black text-slate-400 uppercase">{r}</span>
                     ))}
                   </div>
@@ -418,7 +412,7 @@ export function Analyzer() {
                  <Zap size={14} /> Gaps y Oportunidades Críticas
                </h4>
                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                 {result?.analisis_oportunidades?.map((op: any, i: number) => (
+                 {result?.analisis_oportunidades?.map((op, i) => (
                    <div key={i} className="p-4 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors min-w-0">
                       <div className="flex justify-between items-center mb-2 gap-2">
                          <span className="text-[9px] font-black text-indigo-300 uppercase truncate">{op.area}</span>

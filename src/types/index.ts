@@ -9,6 +9,7 @@ export interface AppUser {
   uid: string;
   email: string | null;
   displayName: string | null;
+  photoURL: string | null;
   emailVerified: boolean;
 }
 
@@ -17,6 +18,7 @@ export function toAppUser(firebaseUser: FirebaseUser): AppUser {
     uid: firebaseUser.uid,
     email: firebaseUser.email,
     displayName: firebaseUser.displayName,
+    photoURL: firebaseUser.photoURL,
     emailVerified: firebaseUser.emailVerified,
   };
 }
@@ -131,7 +133,7 @@ export interface BusinessInfo {
 export interface NavItem {
   id: string;
   label: string;
-  icon: React.ComponentType<{ size?: number }>;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
 }
 
 // ─── Dashboard ────────────────────────────────────────────────

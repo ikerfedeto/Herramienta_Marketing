@@ -125,7 +125,7 @@ export function ROICalculator() {
                   <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Nivel Digital</label>
                   <select 
                     value={params.digitalLevel}
-                    onChange={(e) => setParams({...params, digitalLevel: e.target.value as any})}
+                    onChange={(e) => setParams({...params, digitalLevel: e.target.value as ROIParams['digitalLevel']})}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                   >
                     <option value="bajo">Bajo (Web básica)</option>

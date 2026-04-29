@@ -7,6 +7,7 @@ import { Dashboard } from './components/Dashboard';
 import { Analyzer } from './components/Analyzer';
 import { CreativeStudio } from './components/CreativeStudio';
 import { ROICalculator } from './components/ROICalculator';
+import { LeadsHub } from './components/LeadsHub';
 import { LandingPage } from './components/LandingPage';
 import { Auth } from './components/Auth';
 import { motion, AnimatePresence } from 'motion/react';
@@ -106,7 +107,8 @@ export default function App() {
         >
           <Auth 
             initialMode={authMode} 
-            onSuccess={() => setView('app')} 
+            onSuccess={() => setView('app')}
+            onBack={() => setView('landing')}
           />
         </motion.div>
       )}
@@ -123,6 +125,7 @@ export default function App() {
               {activeTab === 'analyzer' && <Analyzer key="analyzer" />}
               {activeTab === 'creative' && <CreativeStudio key="creative" />}
               {activeTab === 'roi' && <ROICalculator key="roi" />}
+              {activeTab === 'leads' && <LeadsHub key="leads" />}
             </AnimatePresence>
           </Layout>
         </motion.div>
