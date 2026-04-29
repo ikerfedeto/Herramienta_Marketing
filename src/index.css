@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -9,20 +9,58 @@
   body {
     @apply bg-slate-50 text-slate-900 antialiased selection:bg-indigo-100;
   }
+
+  * {
+    @apply scroll-smooth;
+  }
 }
 
 .card {
-  @apply bg-white border border-slate-200 rounded-xl shadow-sm;
+  @apply bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow;
 }
 
 .input-field {
-  @apply block w-full px-3 py-2 border border-slate-300 rounded-md text-sm placeholder-slate-400 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-all;
+  @apply block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-medium placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all bg-slate-50;
 }
 
 .btn-primary {
-  @apply px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply px-5 py-2.5 bg-indigo-600 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-200 active:scale-[0.98];
 }
 
 .btn-secondary {
-  @apply px-4 py-2 border border-slate-300 bg-white text-slate-700 text-sm font-semibold rounded-md hover:bg-slate-50 transition-colors;
+  @apply px-5 py-2.5 border border-slate-200 bg-white text-slate-700 text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-slate-50 transition-all active:scale-[0.98];
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3 {
+  @apply font-black tracking-tight text-slate-900;
+}
+
+.markdown-body h3 {
+  @apply text-lg mt-6 mb-2;
+}
+
+.markdown-body p {
+  @apply text-sm leading-relaxed text-slate-600 mb-4;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  @apply text-sm text-slate-600 pl-4 mb-4 space-y-1;
+}
+
+.markdown-body strong {
+  @apply text-slate-900 font-bold;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  @apply bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100 rounded-lg;
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }

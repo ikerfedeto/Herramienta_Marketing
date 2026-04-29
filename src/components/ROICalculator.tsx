@@ -1,28 +1,12 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  TrendingUp, Calculator, PieChart, Info, Loader2, Sparkles, 
+  TrendingUp, Calculator, Info, Loader2, Sparkles, 
   Target, Zap, AlertCircle, BarChart3, Clock, Rocket, ShieldCheck
 } from 'lucide-react';
 import { predictROI } from '../services/geminiService';
-
-interface ROIParams {
-  investment: number;
-  channel: string;
-  sector: string;
-  location: string;
-  avgTicket: number;
-  digitalLevel: 'bajo' | 'medio' | 'alto';
-}
-
-const SECTOR_BENCHMARKS: Record<string, { ctr: number; cr: number; cpc: number }> = {
-  'SaaS': { ctr: 2.1, cr: 3.5, cpc: 1.5 },
-  'E-commerce': { ctr: 1.8, cr: 2.2, cpc: 0.8 },
-  'Inmobiliaria': { ctr: 2.5, cr: 1.2, cpc: 2.5 },
-  'Salud': { ctr: 3.2, cr: 4.1, cpc: 1.2 },
-  'Educación': { ctr: 2.8, cr: 3.0, cpc: 0.9 },
-  'General': { ctr: 2.0, cr: 2.0, cpc: 1.0 },
-};
+import type { ROIParams, ROIPrediction } from '../types';
+import { SECTOR_BENCHMARKS } from '../types';
 
 export function ROICalculator() {
   const [params, setParams] = useState<ROIParams>({
@@ -35,7 +19,7 @@ export function ROICalculator() {
   });
 
   const [calculating, setCalculating] = useState(false);
-  const [aiResult, setAiResult] = useState<any>(null);
+  const [aiResult, setAiResult] = useState<ROIPrediction | null>(null);
 
   // Deterministic local calculation for real-time feedback
   const localProjection = useMemo(() => {
@@ -74,7 +58,7 @@ export function ROICalculator() {
       <div className="text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-full text-indigo-600">
           <Zap size={14} className="fill-current" />
-          <span className="text-[10px] font-black uppercase tracking-widest">MarketFlow Engine v2.0</span>
+          <span className="text-[10px] font-black uppercase tracking-widest">Motor de Predicción</span>
         </div>
         <h2 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900">Predictor de ROI <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Inteligente</span></h2>
         <p className="text-slate-500 max-w-2xl mx-auto font-medium text-lg">
@@ -87,7 +71,7 @@ export function ROICalculator() {
         <div className="lg:col-span-4 space-y-6">
           <div className="p-8 rounded-3xl bg-white border border-slate-200 shadow-xl shadow-slate-200/40 space-y-8">
             <h3 className="font-black flex items-center gap-2 text-slate-800 text-lg">
-              <Calculator className="text-indigo-600" size={20} /> Inputs de Simulación
+              <Calculator className="text-indigo-600" size={20} /> Parámetros de Simulación
             </h3>
             
             <div className="space-y-6">
@@ -141,7 +125,7 @@ export function ROICalculator() {
                   <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Nivel Digital</label>
                   <select 
                     value={params.digitalLevel}
-                    onChange={(e) => setParams({...params, digitalLevel: e.target.value as any})}
+                    onChange={(e) => setParams({...params, digitalLevel: e.target.value as ROIParams['digitalLevel']})}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                   >
                     <option value="bajo">Bajo (Web básica)</option>
@@ -158,7 +142,7 @@ export function ROICalculator() {
                   className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl shadow-indigo-200 transition-all active:scale-95 disabled:opacity-50"
                 >
                   {calculating ? <Loader2 className="animate-spin" size={20} /> : <Sparkles className="fill-current" size={20} />}
-                  Deep Analysis IA
+                  Análisis Profundo con IA
                 </button>
               </div>
             </div>
@@ -210,7 +194,7 @@ export function ROICalculator() {
                   <div className="space-y-1">
                     <h4 className="text-indigo-900 font-black uppercase tracking-widest text-sm">Escalado Predictivo Habilitado</h4>
                     <p className="text-indigo-600/70 text-xs font-medium max-w-sm">
-                      Mueve los controles de la izquierda para ver el impacto en tiempo real. Pulsa "Deep Analysis IA" para obtener escenarios optimistas y estratégicos.
+                      Mueve los controles de la izquierda para ver el impacto en tiempo real. Pulsa "Análisis Profundo con IA" para obtener escenarios optimistas y estratégicos.
                     </p>
                   </div>
                 </div>
@@ -286,7 +270,7 @@ export function ROICalculator() {
 
                   <div className="p-8 rounded-3xl bg-indigo-600 text-white shadow-xl space-y-6">
                      <h4 className="text-lg font-black flex items-center gap-2">
-                        <Zap size={20} /> Recommendations
+                        <Zap size={20} /> Recomendaciones
                      </h4>
                      <div className="space-y-4">
                         {aiResult.recomendaciones.map((rec: string, i: number) => (

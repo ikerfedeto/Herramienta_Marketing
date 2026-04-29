@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, MessageSquare, Mail, Palette, Megaphone, Loader2, Copy, Check, ImageIcon } from 'lucide-react';
+import { Sparkles, MessageSquare, Mail, Palette, Megaphone, Loader2, Copy, Check, ImageIcon, AlertCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { generateMarketingAsset, generateCreativeImage } from '../services/geminiService';
+import type { BusinessInfo } from '../types';
 
 export function CreativeStudio() {
-  const [businessInfo, setBusinessInfo] = useState({ name: '', valueProposition: '', sector: '' });
+  const [businessInfo, setBusinessInfo] = useState<BusinessInfo>({ name: '', valueProposition: '', sector: '' });
   const [selectedType, setSelectedType] = useState('slogan');
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState('');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [generateWithImage, setGenerateWithImage] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const generators = [
     { id: 'slogan', label: 'Eslóganes', icon: MessageSquare, color: 'text-indigo-600', bg: 'bg-indigo-50/50' },
@@ -25,6 +27,7 @@ export function CreativeStudio() {
     setGenerating(true);
     setResult('');
     setImageUrl(null);
+    setError(null);
     try {
       const [content, img] = await Promise.all([
         generateMarketingAsset(businessInfo, selectedType),
@@ -33,7 +36,8 @@ export function CreativeStudio() {
       setResult(content || '');
       setImageUrl(img);
     } catch (err) {
-      console.error(err);
+      const message = err instanceof Error ? err.message : 'Error al generar contenido. Inténtalo de nuevo.';
+      setError(message);
     } finally {
       setGenerating(false);
     }
@@ -62,7 +66,7 @@ export function CreativeStudio() {
         <div className="md:w-1/3 space-y-6">
           <div className="p-6 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4">
             <h3 className="font-bold flex items-center gap-2 text-slate-800">
-              <Sparkles className="text-indigo-600" size={18} /> Configuración Creative
+              <Sparkles className="text-indigo-600" size={18} /> Configuración
             </h3>
             <div className="space-y-4">
               <div>
@@ -74,6 +78,24 @@ export function CreativeStudio() {
                   className="input-field"
                   placeholder="Ej: EcoShoes"
                 />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1 block">Sector</label>
+                <select
+                  value={businessInfo.sector}
+                  onChange={(e) => setBusinessInfo({...businessInfo, sector: e.target.value})}
+                  className="input-field"
+                >
+                  <option value="">Seleccionar sector...</option>
+                  <option value="SaaS">SaaS / Software</option>
+                  <option value="E-commerce">E-commerce</option>
+                  <option value="Inmobiliaria">Inmobiliaria</option>
+                  <option value="Salud">Salud</option>
+                  <option value="Educación">Educación</option>
+                  <option value="Hostelería">Hostelería</option>
+                  <option value="Finanzas">Finanzas</option>
+                  <option value="General">General / Otro</option>
+                </select>
               </div>
               <div>
                 <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1 block">Propuesta de Valor</label>
@@ -141,6 +163,17 @@ export function CreativeStudio() {
             )}
           </div>
 
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3 text-red-600 text-xs font-semibold"
+            >
+              <AlertCircle size={16} className="shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </motion.div>
+          )}
+
           <div className="flex-1 relative">
             <AnimatePresence mode="wait">
               {generating ? (
@@ -172,9 +205,15 @@ export function CreativeStudio() {
                     <motion.div 
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="rounded-xl overflow-hidden border border-slate-200 shadow-lg aspect-square max-w-sm mx-auto"
+                      className="relative rounded-xl overflow-hidden border border-slate-200 shadow-lg aspect-square max-w-sm mx-auto group"
                     >
-                      <img src={imageUrl} alt="AI Generated" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      <img src={imageUrl} alt="Contenido creativo generado por IA" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      <button 
+                        onClick={downloadImage} 
+                        className="absolute bottom-3 right-3 px-3 py-1.5 bg-white/90 backdrop-blur-sm border border-slate-200 rounded-lg text-[10px] font-bold text-slate-700 uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+                      >
+                        Descargar
+                      </button>
                     </motion.div>
                   )}
                   {result && (

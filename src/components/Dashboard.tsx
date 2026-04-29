@@ -1,335 +1,340 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { 
-  TrendingUp, Users, Target, Activity, 
-  ArrowUpRight, Info, ShieldCheck, Sparkles, 
-  Zap, PieChart, BarChart3, Database,
-  Eye, MousePointer2, Wallet
+import {
+  Search, Sparkles, TrendingUp, Target,
+  ArrowRight, BarChart3, Clock, Zap,
+  FileText, Users, PenTool, Calculator,
+  ChevronRight, CheckCircle2
 } from 'lucide-react';
-import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, 
-  Tooltip, ResponsiveContainer, BarChart, Bar, 
-  Cell
-} from 'recharts';
+import { auth, db } from '../lib/firebase';
+import { collection, query, where, orderBy, limit, getDocs, getCountFromServer, doc, getDoc, updateDoc } from 'firebase/firestore';
 
-const growthData = [
-  { name: 'Lun', leads: 40, predicted: 45 },
-  { name: 'Mar', leads: 30, predicted: 42 },
-  { name: 'Mie', leads: 65, predicted: 50 },
-  { name: 'Jue', leads: 55, predicted: 55 },
-  { name: 'Vie', leads: 90, predicted: 70 },
-  { name: 'Sab', leads: 110, predicted: 85 },
-  { name: 'Dom', leads: 95, predicted: 90 },
+interface DashboardProps {
+  onNavigate: (tab: string) => void;
+}
+
+interface RecentAnalysis {
+  id: string;
+  empresa?: { nombre?: string; sector?: string };
+  hot_lead_score?: number;
+  website?: string;
+  createdAt?: { seconds: number } | Date;
+}
+
+const ONBOARDING_STEPS = [
+  {
+    id: 'analyze',
+    title: 'Analiza tu primer dominio',
+    description: 'Introduce la URL de cualquier empresa y obtén un informe completo de marketing intelligence en segundos.',
+    icon: Search,
+    tab: 'analyzer',
+    cta: 'Ir al Analizador',
+  },
+  {
+    id: 'create',
+    title: 'Genera contenido de marketing',
+    description: 'Crea eslóganes, posts para redes sociales, newsletters y kits de branding con IA.',
+    icon: PenTool,
+    tab: 'creative',
+    cta: 'Abrir Estudio Creativo',
+  },
+  {
+    id: 'calculate',
+    title: 'Calcula tu ROI',
+    description: 'Simula el retorno de inversión de tus campañas con benchmarks reales por sector.',
+    icon: Calculator,
+    tab: 'roi',
+    cta: 'Calcular ROI',
+  },
 ];
 
-const funnelData = [
-  { value: 10000, name: 'Impresiones', fill: '#6366f1' },
-  { value: 800, name: 'Clicks', fill: '#818cf8' },
-  { value: 120, name: 'Leads', fill: '#a5b4fc' },
-  { value: 45, name: 'Clientes', fill: '#c7d2fe' },
-];
+export function Dashboard({ onNavigate }: DashboardProps) {
+  const [analysisCount, setAnalysisCount] = useState(0);
+  const [recentAnalyses, setRecentAnalyses] = useState<RecentAnalysis[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [onboardingComplete, setOnboardingComplete] = useState(true);
 
-const channelData = [
-  { name: 'Ads', value: 45 },
-  { name: 'SEO', value: 30 },
-  { name: 'Social', value: 15 },
-  { name: 'Direct', value: 10 },
-];
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
 
-export function Dashboard() {
-  const stats = [
-    { 
-      label: 'Visitantes Únicos', 
-      value: '24.5k', 
-      trend: '+14.2%', 
-      icon: Eye,
-      confidence: 98,
-      origin: 'Google Analytics + Global Pixel',
-      formula: 'Usted x IP Unívoca'
-    },
-    { 
-      label: 'CPL Promedio', 
-      value: '€2.45', 
-      trend: '-8.1%', 
-      icon: Wallet,
-      confidence: 92,
-      origin: 'AdSpend / IA Funnel Tracking',
-      formula: 'Gasto Total / Conversiones'
-    },
-    { 
-      label: 'Tasa de Conversión', 
-      value: '3.82%', 
-      trend: '+0.5%', 
-      icon: Target,
-      confidence: 95,
-      origin: 'Event Mapping v2',
-      formula: 'Checked Out / Visitantes'
-    },
-    { 
-      label: 'ROI Proyectado', 
-      value: '512%', 
-      trend: '+22%', 
-      icon: TrendingUp,
-      confidence: 88,
-      origin: 'Predictivo MarketFlow AI',
-      formula: 'LTV Estimado / CAC'
-    },
-  ];
+  const loadDashboardData = async () => {
+    if (!auth.currentUser) { setLoading(false); return; }
+    try {
+      const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+      if (userDoc.exists()) {
+        setOnboardingComplete(userDoc.data().onboardingComplete !== false);
+      }
 
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-10 pb-12"
-    >
-      {/* Dashboard Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1">
-          <h2 className="text-3xl font-black tracking-tight text-slate-900">Marketing Intelligence Center</h2>
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest">
-            <Database size={12} /> Live Data Stream <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="mx-2 text-slate-200">|</span>
-            <span className="text-[10px]">Actualizado: hace 4 minutos</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex flex-col items-end gap-1">
-             <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Score Compra Digital</span>
-             <div className="flex items-center gap-2">
-                <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
-                   <motion.div initial={{ width: 0 }} animate={{ width: '84%' }} className="h-full bg-indigo-600 rounded-full" />
-                </div>
-                <span className="text-xs font-black text-indigo-600">84/100</span>
-             </div>
-          </div>
-          <button className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all text-slate-600 shadow-sm relative group">
-            <Info size={18} />
-            <div className="absolute top-full mt-2 right-0 w-64 p-4 bg-slate-900 text-white rounded-2xl text-[10px] opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none shadow-2xl">
-              Nuestros datos combinan señales directas de tu web con benchmarks de mercado procesados por GPT-4o.
-            </div>
-          </button>
-        </div>
-      </div>
+      const analysesRef = collection(db, 'analyses');
+      const countQuery = query(analysesRef, where('ownerId', '==', auth.currentUser.uid));
 
-      {/* Primary KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, i) => (
-          <motion.div 
-            key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="p-8 rounded-3xl bg-white border border-slate-200 shadow-xl shadow-slate-200/40 hover:border-indigo-200 transition-all group flex flex-col justify-between relative overflow-hidden"
-          >
-            <div className="absolute -top-4 -right-4 w-24 h-24 bg-slate-50 rounded-full -z-1 opacity-0 group-hover:opacity-100 transition-all duration-700" />
-            
-            <div className="space-y-4 relative z-10">
-              <div className="flex items-center justify-between">
-                <div className="p-3 bg-slate-50 rounded-2xl text-slate-800 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-500">
-                  <stat.icon size={22} />
-                </div>
-                <div className="flex flex-col items-end">
-                   <span className={`text-xs font-black flex items-center gap-1 ${stat.trend.startsWith('+') ? 'text-emerald-600' : 'text-rose-500'}`}>
-                    {stat.trend} <ArrowUpRight size={10} />
-                  </span>
-                   <div className="flex items-center gap-1 mt-1">
-                      <ShieldCheck size={10} className="text-emerald-500" />
-                      <span className="text-[9px] font-black text-slate-400 capitalize">{stat.confidence}% Conf.</span>
-                   </div>
-                </div>
-              </div>
-              
-              <div className="flex flex-col">
-                <span className="text-4xl font-black tracking-tighter text-slate-900 mb-1">{stat.value}</span>
-                <span className="text-[10px] text-slate-400 font-black uppercase tracking-[0.15em]">{stat.label}</span>
-              </div>
-            </div>
+      const [countSnap, recentSnap] = await Promise.all([
+        getCountFromServer(countQuery),
+        getDocs(query(analysesRef, where('ownerId', '==', auth.currentUser.uid), orderBy('createdAt', 'desc'), limit(5)))
+      ]);
 
-            <div className="mt-6 pt-6 border-t border-slate-50 flex items-center justify-between relative z-10">
-               <div className="flex flex-col">
-                  <span className="text-[8px] font-black text-slate-300 uppercase">Origen</span>
-                  <span className="text-[9px] font-bold text-slate-500">{stat.origin}</span>
-               </div>
-               <div className="relative group/tooltip">
-                  <Info size={12} className="text-slate-300 pointer-cursor" />
-                  <div className="absolute bottom-full mb-2 right-0 w-32 p-2 bg-slate-900 text-white rounded-lg text-[8px] opacity-0 group-hover/tooltip:opacity-100 transition-opacity z-50">
-                    {stat.formula}
-                  </div>
-               </div>
-            </div>
-          </motion.div>
+      setAnalysisCount(countSnap.data().count);
+      setRecentAnalyses(recentSnap.docs.map(d => ({ id: d.id, ...d.data() } as RecentAnalysis)));
+
+      if (countSnap.data().count > 0 && !userDoc.data()?.onboardingComplete) {
+        setOnboardingComplete(true);
+      }
+    } catch (err) {
+      console.error('Dashboard data load error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const completeOnboarding = async () => {
+    if (!auth.currentUser) return;
+    setOnboardingComplete(true);
+    try {
+      await updateDoc(doc(db, 'users', auth.currentUser.uid), { onboardingComplete: true });
+    } catch (err) {
+      console.error('Onboarding update error:', err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="max-w-5xl mx-auto space-y-6">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="h-32 rounded-2xl bg-slate-100 animate-pulse" />
         ))}
       </div>
+    );
+  }
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Growth Chart */}
-        <div className="lg:col-span-8 p-10 rounded-[40px] bg-white border border-slate-200 shadow-2xl shadow-slate-200/30 space-y-8">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h3 className="text-xl font-black text-slate-900 tracking-tight">Tracción de Leads y Predicción</h3>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                <Activity size={12} /> Comparativa: Real vs Benchmarks AI
-              </p>
-            </div>
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-indigo-600 shadow-lg shadow-indigo-200" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Real</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-slate-200" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Predictivo</span>
-              </div>
-            </div>
-          </div>
+  const showOnboarding = !onboardingComplete && analysisCount === 0;
 
-          <div className="h-[400px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={growthData}>
-                <defs>
-                  <linearGradient id="colorLeads" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.15}/>
-                    <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <XAxis 
-                  dataKey="name" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }}
-                  dy={10}
-                />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    borderRadius: '20px', 
-                    border: 'none', 
-                    boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)',
-                    padding: '16px'
-                  }} 
-                  labelStyle={{ fontWeight: 900, textTransform: 'uppercase', fontSize: '10px', color: '#4338ca', marginBottom: '8px' }}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="leads" 
-                  stroke="#4f46e5" 
-                  strokeWidth={4}
-                  fillOpacity={1} 
-                  fill="url(#colorLeads)" 
-                  animationDuration={2000}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="predicted" 
-                  stroke="#e2e8f0" 
-                  strokeWidth={2}
-                  strokeDasharray="8 8"
-                  fill="transparent" 
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Funnel Section */}
-        <div className="lg:col-span-4 p-10 rounded-[40px] bg-slate-900 text-white shadow-2xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-12 opacity-5 translate-x-1/4 -translate-y-1/4">
-             <PieChart size={300} />
-          </div>
-          
-          <div className="relative z-10 h-full flex flex-col gap-10">
-            <div className="space-y-1">
-              <h3 className="text-xl font-black tracking-tight text-white">Salud del Funnel</h3>
-              <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Conversión End-to-End</p>
-            </div>
-
-            <div className="flex-1 flex flex-col justify-between py-6">
-               {funnelData.map((item, idx) => (
-                 <div key={item.name} className="space-y-2 group/item">
-                    <div className="flex items-center justify-between text-xs font-black">
-                       <span className="text-slate-400 uppercase tracking-widest">{item.name}</span>
-                       <span className="text-white">{item.value.toLocaleString()}</span>
-                    </div>
-                    <div className="h-4 bg-white/5 rounded-full overflow-hidden border border-white/10">
-                       <motion.div 
-                          initial={{ width: 0 }}
-                          animate={{ width: `${(item.value / funnelData[0].value) * 100}%` }}
-                          transition={{ delay: 0.5 + (idx * 0.1), duration: 1.5 }}
-                          className="h-full rounded-full shadow-lg"
-                          style={{ backgroundColor: item.fill }}
-                       />
-                    </div>
-                    {idx < funnelData.length - 1 && (
-                      <div className="flex justify-center -my-1">
-                        <div className="text-[10px] font-black text-indigo-500/50">
-                           {((funnelData[idx+1].value / item.value) * 100).toFixed(1)}% drop-off
-                        </div>
-                      </div>
-                    )}
-                 </div>
-               ))}
-            </div>
-
-            <div className="p-6 bg-white/5 rounded-3xl border border-white/10 backdrop-blur-sm">
-               <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 bg-indigo-500 rounded-xl">
-                    <Sparkles size={16} className="text-white" />
-                  </div>
-                  <span className="text-xs font-black uppercase tracking-widest">AI Insight</span>
-               </div>
-               <p className="text-[11px] text-slate-300 leading-relaxed font-medium">
-                 El mayor abandono ocurre entre <span className="text-white font-bold">Clicks y Leads (85%)</span>. Mejorar el tiempo de carga de la landing podría incrementar el ROI total en un <span className="text-emerald-400 font-bold">12.5%</span>.
-               </p>
-            </div>
-          </div>
-        </div>
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="max-w-5xl mx-auto space-y-8 pb-12"
+    >
+      {/* Header */}
+      <div className="space-y-1">
+        <h2 className="text-2xl lg:text-3xl font-black tracking-tight text-slate-900">
+          {showOnboarding ? 'Bienvenido a MarketFlow AI' : 'Panel de Control'}
+        </h2>
+        <p className="text-sm text-slate-500 font-medium">
+          {showOnboarding
+            ? 'Completa estos 3 pasos para sacar el máximo partido a la plataforma.'
+            : `Tienes ${analysisCount} ${analysisCount === 1 ? 'análisis realizado' : 'análisis realizados'}.`}
+        </p>
       </div>
 
-      {/* Strategic Table/Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {/* Channel Efficiency */}
-        <div className="p-8 rounded-[32px] bg-white border border-slate-200 shadow-xl space-y-6">
-           <h3 className="text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
-              <BarChart3 className="text-indigo-600" size={18} /> Rendimiento por Canal
-           </h3>
-           <div className="space-y-5">
-              {channelData.map(c => (
-                <div key={c.name} className="flex items-center gap-4">
-                   <div className="w-12 text-[10px] font-black text-slate-400 uppercase tracking-widest">{c.name}</div>
-                   <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }} 
-                        animate={{ width: `${c.value}%` }} 
-                        className={`h-full rounded-full ${c.value > 40 ? 'bg-indigo-600' : c.value > 20 ? 'bg-indigo-400' : 'bg-slate-300'}`} 
-                      />
-                   </div>
-                   <div className="w-8 text-[11px] font-black text-slate-900 text-right">{c.value}%</div>
+      {/* Onboarding */}
+      {showOnboarding && (
+        <div className="space-y-4">
+          {ONBOARDING_STEPS.map((step, i) => (
+            <motion.div
+              key={step.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all group"
+            >
+              <div className="flex items-start gap-5">
+                <div className="p-3 bg-indigo-50 rounded-xl text-indigo-600 shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                  <step.icon size={24} />
                 </div>
-              ))}
-           </div>
-        </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-black text-indigo-600 uppercase tracking-wider">Paso {i + 1}</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 mb-1">{step.title}</h3>
+                  <p className="text-sm text-slate-500 font-medium mb-4">{step.description}</p>
+                  <button
+                    onClick={() => onNavigate(step.tab)}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-indigo-700 transition-all active:scale-95"
+                  >
+                    {step.cta} <ArrowRight size={14} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          ))}
 
-        {/* Tactical Suggestions */}
-        <div className="lg:col-span-2 p-8 rounded-[32px] bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col justify-center items-center text-center space-y-4">
-           <div className="p-5 bg-white rounded-full shadow-xl border border-slate-100">
-              <Zap size={32} className="text-indigo-600 fill-current" />
-           </div>
-           <div className="space-y-1">
-              <h4 className="text-lg font-black text-slate-900 uppercase tracking-widest">Generador de Recomendaciones Estratégicas</h4>
-              <p className="text-xs font-medium text-slate-500 max-w-md mx-auto">
-                Analiza las tendencias de hoy para ajustar tu presupuesto de mañana. El sistema sugiere reubicar <span className="text-indigo-600 font-black">€1,200</span> de Social a SEO este trimestre.
-              </p>
-           </div>
-           <button className="px-8 py-3 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 shadow-xl">
-             Ejecutar Optimización Automática
-           </button>
+          <button
+            onClick={completeOnboarding}
+            className="text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-wider"
+          >
+            Saltar onboarding
+          </button>
         </div>
-      </div>
+      )}
+
+      {/* Dashboard with real data */}
+      {!showOnboarding && (
+        <>
+          {/* Quick Actions */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { label: 'Nuevo Análisis', icon: Search, tab: 'analyzer', color: 'from-indigo-600 to-indigo-700' },
+              { label: 'Crear Contenido', icon: PenTool, tab: 'creative', color: 'from-purple-600 to-purple-700' },
+              { label: 'Calcular ROI', icon: TrendingUp, tab: 'roi', color: 'from-emerald-600 to-emerald-700' },
+              { label: 'Ver Leads', icon: Users, tab: 'leads', color: 'from-amber-600 to-amber-700' },
+            ].map((action, i) => (
+              <motion.button
+                key={action.label}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                onClick={() => onNavigate(action.tab)}
+                className={`p-5 rounded-2xl bg-gradient-to-br ${action.color} text-white shadow-lg hover:shadow-xl transition-all active:scale-[0.98] group`}
+              >
+                <action.icon size={22} className="mb-3 opacity-80 group-hover:opacity-100 transition-opacity" />
+                <p className="text-xs font-bold uppercase tracking-wider text-left">{action.label}</p>
+              </motion.button>
+            ))}
+          </div>
+
+          {/* Stats Summary */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-indigo-50 rounded-xl">
+                  <FileText size={18} className="text-indigo-600" />
+                </div>
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Análisis Totales</span>
+              </div>
+              <p className="text-4xl font-black text-slate-900">{analysisCount}</p>
+            </div>
+            <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-emerald-50 rounded-xl">
+                  <Target size={18} className="text-emerald-600" />
+                </div>
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Leads Detectados</span>
+              </div>
+              <p className="text-4xl font-black text-slate-900">{recentAnalyses.filter(a => (a.hot_lead_score ?? 0) >= 60).length}</p>
+              <p className="text-xs text-slate-400 font-medium mt-1">con score {'>'} 60%</p>
+            </div>
+            <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-purple-50 rounded-xl">
+                  <BarChart3 size={18} className="text-purple-600" />
+                </div>
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Score Medio</span>
+              </div>
+              <p className="text-4xl font-black text-slate-900">
+                {recentAnalyses.length > 0
+                  ? Math.round(recentAnalyses.reduce((sum, a) => sum + (a.hot_lead_score ?? 0), 0) / recentAnalyses.length)
+                  : 0}%
+              </p>
+            </div>
+          </div>
+
+          {/* Recent Analyses */}
+          <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                <Clock size={18} className="text-indigo-600" />
+                Análisis Recientes
+              </h3>
+              {analysisCount > 0 && (
+                <button
+                  onClick={() => onNavigate('analyzer')}
+                  className="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors"
+                >
+                  Ver todos <ChevronRight size={14} />
+                </button>
+              )}
+            </div>
+
+            {recentAnalyses.length === 0 ? (
+              <div className="text-center py-12">
+                <Search size={40} className="mx-auto text-slate-200 mb-4" />
+                <p className="text-sm font-bold text-slate-400 mb-2">Sin análisis todavía</p>
+                <p className="text-xs text-slate-400 mb-6">Analiza tu primer dominio para empezar a generar insights.</p>
+                <button
+                  onClick={() => onNavigate('analyzer')}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-indigo-700 transition-all"
+                >
+                  <Zap size={14} /> Analizar Dominio
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {recentAnalyses.map((analysis, i) => (
+                  <motion.div
+                    key={analysis.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    onClick={() => onNavigate('analyzer')}
+                    className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold shrink-0">
+                      {(analysis.empresa?.nombre || analysis.website || '?')[0].toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-slate-900 text-sm truncate group-hover:text-indigo-600 transition-colors">
+                        {analysis.empresa?.nombre || analysis.website || 'Análisis sin nombre'}
+                      </p>
+                      <p className="text-xs text-slate-400 font-medium">
+                        {analysis.empresa?.sector || 'Sin sector'}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <div className="text-right">
+                        <p className={`text-sm font-black ${(analysis.hot_lead_score ?? 0) >= 70 ? 'text-emerald-600' : (analysis.hot_lead_score ?? 0) >= 40 ? 'text-amber-600' : 'text-slate-400'}`}>
+                          {analysis.hot_lead_score ?? 0}%
+                        </p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase">Score</p>
+                      </div>
+                      <ChevronRight size={16} className="text-slate-300 group-hover:text-indigo-600 transition-colors" />
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Pro Tip */}
+          <div className="p-6 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-700 text-white">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-white/10 rounded-xl shrink-0">
+                <Sparkles size={24} />
+              </div>
+              <div>
+                <h4 className="font-bold mb-1">Consejo Pro</h4>
+                <p className="text-sm text-indigo-100 font-medium">
+                  Usa el <button onClick={() => onNavigate('analyzer')} className="underline font-bold text-white hover:text-indigo-200">Analizador</button> para escanear los dominios de tus competidores y descubrir gaps en su estrategia digital que puedes explotar.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Feature Highlight */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button
+              onClick={() => onNavigate('creative')}
+              className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all text-left group"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <CheckCircle2 size={18} className="text-purple-600" />
+                <span className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">Estudio Creativo</span>
+              </div>
+              <p className="text-xs text-slate-500 font-medium">Genera eslóganes, posts y newsletters optimizados con IA para tu marca.</p>
+            </button>
+            <button
+              onClick={() => onNavigate('roi')}
+              className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all text-left group"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <CheckCircle2 size={18} className="text-emerald-600" />
+                <span className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">Predictor de ROI</span>
+              </div>
+              <p className="text-xs text-slate-500 font-medium">Simula escenarios de inversión y predice resultados con benchmarks reales.</p>
+            </button>
+          </div>
+        </>
+      )}
     </motion.div>
   );
 }

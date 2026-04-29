@@ -1,24 +1,25 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Search, Globe, Mail, BarChart2, CheckCircle2, 
-  AlertCircle, Loader2, Target, Users, Zap, 
-  Shield, Cpu, ExternalLink, Phone, MapPin, 
-  Activity, Sparkles, History, Clock, ChevronRight,
-  Trash2
+  Search, Globe, Mail,
+  AlertCircle, Loader2, Target, Zap, 
+  Shield, Cpu, Phone, MapPin, 
+  Activity, Sparkles, History, Clock,
+  Trash2, ExternalLink
 } from 'lucide-react';
 import { analyzeBusiness } from '../services/geminiService';
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp, query, where, orderBy, limit, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import type { AnalysisHistoryItem } from '../types';
 
 export function Analyzer() {
   const [input, setInput] = useState('');
   const [description, setDescription] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<AnalysisHistoryItem | null>(null);
   const [error, setError] = useState('');
   const [step, setStep] = useState('');
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<AnalysisHistoryItem[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export function Analyzer() {
         limit(10)
       );
       const querySnapshot = await getDocs(q);
-      const docs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const docs = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() })) as AnalysisHistoryItem[];
       setHistory(docs);
     } catch (err) {
       console.error('Error fetching history:', err);
@@ -67,13 +68,7 @@ export function Analyzer() {
     setStep('Iniciando rastreo web...');
 
     try {
-      setStep('Enriqueciendo datos vía Google Search...');
-      await new Promise(r => setTimeout(r, 1000));
-      
-      setStep('Analizando tecnologías y píxeles...');
-      await new Promise(r => setTimeout(r, 800));
-
-      setStep('Ejecutando motores de IA de Marketing...');
+      setStep('Analizando con IA de Marketing...');
       const data = await analyzeBusiness(input, description);
       
       console.log('Análisis completado:', data);
@@ -82,28 +77,29 @@ export function Analyzer() {
         throw new Error('La IA no pudo estructurar los datos del negocio.');
       }
       
-      setResult(data);
+      const analysisItem: AnalysisHistoryItem = { ...data, id: '', website: input, createdAt: new Date() };
+      setResult(analysisItem);
       
-      // Guardar en Firestore y actualizar historial local
       if (auth.currentUser) {
-        const path = 'analyses';
+        const firestorePath = 'analyses';
         try {
-          const docRef = await addDoc(collection(db, path), {
+          const docRef = await addDoc(collection(db, firestorePath), {
             ...data,
             website: input,
             ownerId: auth.currentUser.uid,
             createdAt: serverTimestamp()
           });
           
-          // Actualizar historial localmente para evitar re-fetch
-          setHistory(prev => [{ id: docRef.id, ...data, website: input, createdAt: new Date() }, ...prev.slice(0, 9)]);
+          const savedItem: AnalysisHistoryItem = { ...data, id: docRef.id, website: input, createdAt: new Date() };
+          setResult(savedItem);
+          setHistory(prev => [savedItem, ...prev.slice(0, 9)]);
         } catch (error) {
-          handleFirestoreError(error, OperationType.CREATE, path);
+          handleFirestoreError(error, OperationType.CREATE, firestorePath);
         }
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Analyzer Error:', err);
-      const errorMessage = err.message || 'Error desconocido';
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
       setError(`Error al analizar: ${errorMessage}. Revisa la URL o descripción.`);
     } finally {
       setAnalyzing(false);
@@ -186,11 +182,11 @@ export function Analyzer() {
       <div className="lg:col-span-9 space-y-12">
         <div className="text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-full text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-2">
-            <Shield size={12} /> GDPR Compliant Scraping
+            <Shield size={12} /> Cumplimiento RGPD
           </div>
-          <h2 className="text-4xl font-extrabold tracking-tight text-slate-900">Deep <span className="text-indigo-600">Scraper</span> & Business Intel</h2>
+          <h2 className="text-4xl font-extrabold tracking-tight text-slate-900">Analizador de <span className="text-indigo-600">Negocios</span> con IA</h2>
           <p className="text-slate-500 max-w-xl mx-auto font-medium">
-            Motor avanzado de extracción de datos y detección de oportunidades. Escanea el ADN digital de cualquier empresa en segundos.
+            Analiza cualquier dominio y detecta oportunidades de venta. Obtén un informe completo de la presencia digital de cualquier empresa en segundos.
           </p>
         </div>
 
@@ -242,7 +238,7 @@ export function Analyzer() {
                 </>
               ) : (
                 <>
-                  <Zap size={22} className="fill-current" /> Ejecutar Deep Scraping IA
+                  <Zap size={22} className="fill-current" /> Analizar con IA
                 </>
               )}
             </button>
@@ -300,7 +296,7 @@ export function Analyzer() {
 
               <div className="p-8 rounded-2xl bg-slate-950 border border-slate-800 shadow-2xl flex flex-col items-center justify-center text-center relative overflow-hidden group md:col-span-3">
                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
-                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Lead Intent</p>
+                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Intención de Compra</p>
                  <p className="text-6xl font-black text-white group-hover:scale-110 transition-transform">
                    {result?.hot_lead_score}<span className="text-2xl text-slate-600">%</span>
                  </p>
@@ -314,7 +310,7 @@ export function Analyzer() {
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
               <div className="p-6 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4 min-w-0">
                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Cpu size={14} className="text-indigo-600" /> Stack & Security
+                  <Cpu size={14} className="text-indigo-600" /> Tecnología y Seguridad
                 </h4>
                 <div className="space-y-3">
                   <div className="flex justify-between text-xs font-medium border-b border-slate-50 pb-2">
@@ -328,7 +324,7 @@ export function Analyzer() {
                     </span>
                   </div>
                   <div className="pt-2">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-2">GDPR Compliance</p>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-2">Cumplimiento RGPD</p>
                     <span className={`px-2 py-1 rounded text-[9px] font-bold uppercase ${
                       result?.tecnologia?.cumplimiento_gdpr === 'alto' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
                     }`}>{result?.tecnologia?.cumplimiento_gdpr}</span>
@@ -338,7 +334,7 @@ export function Analyzer() {
 
               <div className="p-6 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4 min-w-0">
                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Activity size={14} className="text-pink-600" /> Growth Signals
+                  <Activity size={14} className="text-pink-600" /> Señales de Crecimiento
                 </h4>
                 <div className="space-y-4 overflow-hidden">
                   <div className={`p-2 rounded border ${result?.senales_crecimiento?.contratacion_activa ? 'bg-indigo-50 border-indigo-100' : 'bg-slate-50 border-slate-100'}`}>
@@ -356,17 +352,17 @@ export function Analyzer() {
 
               <div className="p-6 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4 min-w-0">
                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Target size={14} className="text-emerald-600" /> Marketing Intensity
+                  <Target size={14} className="text-emerald-600" /> Intensidad de Marketing
                 </h4>
                 <div className="space-y-4 overflow-hidden">
                    <div>
-                    <div className="flex justify-between text-[10px] font-bold mb-1 uppercase text-slate-400">SEO Health</div>
+                    <div className="flex justify-between text-[10px] font-bold mb-1 uppercase text-slate-400">Salud SEO</div>
                     <div className="w-full h-1.5 bg-slate-100 rounded-full">
                       <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${result?.marketing_intensity?.seo_score || 0}%` }} />
                     </div>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <span className="text-[9px] font-bold text-slate-400 uppercase">Facebook/Google Ads:</span>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase">Publicidad Ads:</span>
                     <span className="text-xs font-semibold text-slate-900 break-words leading-tight">{result?.marketing_intensity?.ads_presence}</span>
                   </div>
                 </div>
@@ -374,7 +370,7 @@ export function Analyzer() {
 
               <div className="p-6 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4 min-w-0">
                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Mail size={14} className="text-indigo-600" /> Contact Info
+                  <Mail size={14} className="text-indigo-600" /> Información de Contacto
                 </h4>
                 <div className="space-y-2 overflow-hidden">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-700 break-all">
@@ -384,7 +380,7 @@ export function Analyzer() {
                     <Phone size={12} className="text-slate-300 shrink-0" /> {result?.contacto?.telefono || 'N/A'}
                   </div>
                   <div className="flex flex-wrap gap-1 mt-2">
-                    {result?.contacto?.rrss?.slice(0, 3).map((r: string, i: number) => (
+                    {result?.contacto?.rrss?.slice(0, 3).map((r, i) => (
                       <span key={i} className="px-2 py-0.5 bg-slate-50 border border-slate-100 rounded text-[8px] font-black text-slate-400 uppercase">{r}</span>
                     ))}
                   </div>
@@ -399,13 +395,13 @@ export function Analyzer() {
                </div>
                <div className="relative z-10 flex flex-col md:flex-row gap-8 items-start">
                   <div className="space-y-3 flex-1 min-w-0">
-                     <h4 className="text-xl font-black tracking-tight break-words">Growth Hypothesis: <span className="text-indigo-200">{result?.hipotesis_crecimiento?.problema_raiz}</span></h4>
+                     <h4 className="text-xl font-black tracking-tight break-words">Hipótesis de Crecimiento: <span className="text-indigo-200">{result?.hipotesis_crecimiento?.problema_raiz}</span></h4>
                      <p className="text-sm font-medium text-indigo-50 leading-relaxed max-w-2xl break-words">
                        {result?.hipotesis_crecimiento?.solucion_propuesta}
                      </p>
                   </div>
                   <button className="md:ml-auto shrink-0 px-6 py-3 bg-white text-indigo-600 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all shadow-lg active:scale-95">
-                    Activar Estrategia
+                    Ver Estrategia
                   </button>
                </div>
             </div>
@@ -416,7 +412,7 @@ export function Analyzer() {
                  <Zap size={14} /> Gaps y Oportunidades Críticas
                </h4>
                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                 {result?.analisis_oportunidades?.map((op: any, i: number) => (
+                 {result?.analisis_oportunidades?.map((op, i) => (
                    <div key={i} className="p-4 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors min-w-0">
                       <div className="flex justify-between items-center mb-2 gap-2">
                          <span className="text-[9px] font-black text-indigo-300 uppercase truncate">{op.area}</span>
