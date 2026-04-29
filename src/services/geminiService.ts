@@ -5,16 +5,27 @@ import type {
   ROIPrediction,
   ApiResponse,
 } from "../types";
+import { auth } from "../lib/firebase";
 
 const API_BASE = "/api";
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (auth.currentUser) {
+    const token = await auth.currentUser.getIdToken();
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
+}
 
 async function apiRequest<T>(
   endpoint: string,
   body: object
 ): Promise<T> {
+  const headers = await getAuthHeaders();
   const response = await fetch(`${API_BASE}${endpoint}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(body),
   });
 

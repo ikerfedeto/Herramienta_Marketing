@@ -8,6 +8,7 @@ import { Analyzer } from './components/Analyzer';
 import { CreativeStudio } from './components/CreativeStudio';
 import { ROICalculator } from './components/ROICalculator';
 import { LeadsHub } from './components/LeadsHub';
+import { Settings } from './components/Settings';
 import { LandingPage } from './components/LandingPage';
 import { Auth } from './components/Auth';
 import { motion, AnimatePresence } from 'motion/react';
@@ -121,11 +122,12 @@ export default function App() {
         >
           <Layout activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} user={user}>
             <AnimatePresence mode="wait">
-              {activeTab === 'dashboard' && <Dashboard key="dashboard" />}
+              {activeTab === 'dashboard' && <Dashboard key="dashboard" onNavigate={setActiveTab} />}
               {activeTab === 'analyzer' && <Analyzer key="analyzer" />}
               {activeTab === 'creative' && <CreativeStudio key="creative" />}
               {activeTab === 'roi' && <ROICalculator key="roi" />}
               {activeTab === 'leads' && <LeadsHub key="leads" />}
+              {activeTab === 'settings' && <Settings key="settings" user={user} />}
             </AnimatePresence>
           </Layout>
         </motion.div>

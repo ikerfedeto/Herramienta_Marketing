@@ -3,6 +3,7 @@ import { createServer as createViteServer } from "vite";
 import path from "path";
 import dotenv from "dotenv";
 import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
+import admin from "firebase-admin";
 
 dotenv.config({ path: ".env.local" });
 dotenv.config();
@@ -21,6 +22,34 @@ function validateEnv(): void {
 }
 
 validateEnv();
+
+// ─── Firebase Admin ───────────────────────────────────────────
+
+if (!admin.apps.length) {
+  admin.initializeApp({
+    projectId: process.env.FIREBASE_PROJECT_ID || "ai-studio-applet-webapp-e35ea",
+  });
+}
+
+async function authMiddleware(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+): Promise<void> {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) {
+    res.status(401).json({ success: false, error: "Token de autenticación requerido." });
+    return;
+  }
+  try {
+    const token = authHeader.split("Bearer ")[1];
+    const decoded = await admin.auth().verifyIdToken(token);
+    (req as express.Request & { uid?: string }).uid = decoded.uid;
+    next();
+  } catch {
+    res.status(401).json({ success: false, error: "Token inválido o expirado." });
+  }
+}
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 const MODEL = "gemini-3-flash-preview";
@@ -135,7 +164,7 @@ async function startServer() {
       res.setHeader("Access-Control-Allow-Origin", origin);
     }
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
     if (_req.method === "OPTIONS") {
       res.status(204).end();
       return;
@@ -154,7 +183,7 @@ async function startServer() {
     });
   });
 
-  app.post("/api/analyze-business", rateLimit, async (req, res) => {
+  app.post("/api/analyze-business", authMiddleware, rateLimit, async (req, res) => {
     try {
       const { url, description, searchResults } = req.body;
 
@@ -309,7 +338,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/generate-content", rateLimit, async (req, res) => {
+  app.post("/api/generate-content", authMiddleware, rateLimit, async (req, res) => {
     try {
       const { businessInfo, type } = req.body;
 
@@ -387,7 +416,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/generate-image", rateLimit, async (req, res) => {
+  app.post("/api/generate-image", authMiddleware, rateLimit, async (req, res) => {
     try {
       const { businessInfo, type } = req.body;
 
@@ -449,7 +478,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/predict-roi", rateLimit, async (req, res) => {
+  app.post("/api/predict-roi", authMiddleware, rateLimit, async (req, res) => {
     try {
       const { investment, channel, sector, location, avgTicket, digitalLevel } =
         req.body;

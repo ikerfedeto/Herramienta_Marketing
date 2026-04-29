@@ -66,7 +66,7 @@ export function CreativeStudio() {
         <div className="md:w-1/3 space-y-6">
           <div className="p-6 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4">
             <h3 className="font-bold flex items-center gap-2 text-slate-800">
-              <Sparkles className="text-indigo-600" size={18} /> Configuración Creative
+              <Sparkles className="text-indigo-600" size={18} /> Configuración
             </h3>
             <div className="space-y-4">
               <div>

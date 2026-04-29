@@ -9,7 +9,8 @@ import {
   Bell,
   Menu,
   X,
-  Users
+  Users,
+  Settings
 } from 'lucide-react';
 import type { AppUser, NavItem } from '../types';
 
@@ -23,10 +24,10 @@ interface LayoutProps {
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard', label: 'Panel de Control', icon: LayoutDashboard },
-  { id: 'analyzer', label: 'Deep Scraper', icon: Search },
+  { id: 'analyzer', label: 'Analizador', icon: Search },
   { id: 'creative', label: 'Estudio Creativo', icon: Sparkles },
-  { id: 'roi', label: 'ROI y Predicciones', icon: TrendingUp },
-  { id: 'leads', label: 'Leads Hub', icon: Users },
+  { id: 'roi', label: 'Predictor de ROI', icon: TrendingUp },
+  { id: 'leads', label: 'Centro de Leads', icon: Users },
 ];
 
 export function Layout({ children, activeTab, setActiveTab, onLogout, user }: LayoutProps) {
@@ -47,7 +48,7 @@ export function Layout({ children, activeTab, setActiveTab, onLogout, user }: La
           </div>
           <div>
             <span className="text-white font-bold text-lg tracking-tight block leading-tight">MarketFlow</span>
-            <span className="text-indigo-400 text-[9px] font-black uppercase tracking-[0.2em]">AI Platform</span>
+            <span className="text-indigo-400 text-[9px] font-black uppercase tracking-[0.2em]">Plataforma IA</span>
           </div>
         </div>
         <nav className="space-y-1">
@@ -71,7 +72,7 @@ export function Layout({ children, activeTab, setActiveTab, onLogout, user }: La
         </nav>
       </div>
       <div className="mt-auto p-6 border-t border-white/10">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mb-3">
           <img
             src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=4f46e5&color=fff&bold=true`}
             alt={`Avatar de ${displayName}`}
@@ -82,12 +83,24 @@ export function Layout({ children, activeTab, setActiveTab, onLogout, user }: La
             <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
           </div>
         </div>
-        <button
-          onClick={onLogout}
-          className="mt-4 w-full flex items-center justify-center gap-2 px-3 py-2 text-xs text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-all font-semibold"
-        >
-          <LogOut size={14} /> Cerrar Sesión
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleTabChange('settings')}
+            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs rounded-lg transition-all font-semibold ${
+              activeTab === 'settings'
+                ? 'text-white bg-white/10'
+                : 'text-slate-500 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Settings size={14} /> Ajustes
+          </button>
+          <button
+            onClick={onLogout}
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-all font-semibold"
+          >
+            <LogOut size={14} /> Salir
+          </button>
+        </div>
       </div>
     </>
   );
@@ -141,16 +154,15 @@ export function Layout({ children, activeTab, setActiveTab, onLogout, user }: La
               <Menu size={22} />
             </button>
             <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider">
-              {NAV_ITEMS.find(i => i.id === activeTab)?.label}
+              {activeTab === 'settings' ? 'Ajustes' : NAV_ITEMS.find(i => i.id === activeTab)?.label}
             </h2>
           </div>
           <div className="flex items-center gap-3">
             <span className="hidden sm:inline-flex text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100">
-              Sistema Activo
+              Plan Starter
             </span>
             <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors relative" aria-label="Notificaciones">
               <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full ring-2 ring-white" />
             </button>
             <img
               src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=4f46e5&color=fff&bold=true`}

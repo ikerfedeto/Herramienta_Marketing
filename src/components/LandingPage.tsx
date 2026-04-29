@@ -10,8 +10,8 @@ import {
   Users,
   LineChart,
   Brain,
-  Play,
-  Star
+  Star,
+  Check
 } from 'lucide-react';
 
 interface LandingPageProps {
@@ -34,6 +34,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin 
           <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
             <a href="#features" className="hover:text-indigo-600 transition-colors">Funcionalidades</a>
             <a href="#how-it-works" className="hover:text-indigo-600 transition-colors">Cómo funciona</a>
+            <a href="#pricing" className="hover:text-indigo-600 transition-colors">Precios</a>
             <a href="#testimonials" className="hover:text-indigo-600 transition-colors">Testimonios</a>
           </div>
           <div className="flex items-center gap-3">
@@ -66,48 +67,36 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin 
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
               </span>
-              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Plataforma IA v2.0 activa</span>
+              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Plataforma IA activa</span>
             </div>
             <h1 className="text-5xl sm:text-6xl md:text-8xl font-black tracking-tight text-slate-950 leading-[0.9] mb-6">
-              Auditoría de <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Marketing</span> impulsada por IA.
+              Inteligencia de <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Marketing</span> con IA.
             </h1>
             <p className="text-lg md:text-xl text-slate-600 leading-relaxed mb-10 max-w-xl">
-              Analiza cualquier dominio en segundos. Obtén insights profundos, stacks tecnológicos y estrategias de crecimiento personalizadas para cerrar más leads.
+              Analiza cualquier dominio en segundos. Obtén informes de oportunidad, genera contenido profesional y predice tu ROI con datos reales de mercado.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={onGetStarted}
                 className="px-8 py-4 bg-indigo-600 text-white font-black text-sm uppercase tracking-widest rounded-2xl hover:bg-indigo-700 transition-all shadow-2xl shadow-indigo-200 flex items-center justify-center gap-2 group"
               >
-                Comenzar gratis
+                Empezar gratis
                 <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </button>
-              <button className="flex items-center justify-center gap-3 px-6 py-4 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all group">
-                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors">
-                  <Play size={16} className="text-indigo-600 ml-0.5" />
-                </div>
-                <span className="text-sm font-bold text-slate-700">Ver demo (2 min)</span>
+              <button
+                onClick={onLogin}
+                className="flex items-center justify-center gap-3 px-6 py-4 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all group"
+              >
+                <span className="text-sm font-bold text-slate-700">Ya tengo cuenta</span>
               </button>
             </div>
             <div className="flex items-center gap-4 mt-8">
-              <div className="flex -space-x-2">
-                {['A', 'B', 'C', 'D'].map(letter => (
-                  <img
-                    key={letter}
-                    src={`https://ui-avatars.com/api/?name=${letter}&background=random&color=fff&bold=true&size=32`}
-                    alt=""
-                    className="w-8 h-8 rounded-full border-2 border-white"
-                  />
+              <div className="flex gap-0.5">
+                {[1,2,3,4,5].map(i => (
+                  <Star key={i} size={14} className="text-amber-400 fill-amber-400" />
                 ))}
               </div>
-              <div className="flex flex-col">
-                <div className="flex gap-0.5">
-                  {[1,2,3,4,5].map(i => (
-                    <Star key={i} size={12} className="text-amber-400 fill-amber-400" />
-                  ))}
-                </div>
-                <span className="text-xs font-bold text-slate-500">+2.400 marketers confían en nosotros</span>
-              </div>
+              <span className="text-xs font-bold text-slate-500">Herramienta #1 para agencias y consultoras de marketing</span>
             </div>
           </motion.div>
 
@@ -123,7 +112,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin 
                     <Brain className="text-white" size={32} />
                   </div>
                   <h3 className="text-2xl font-black text-white mb-2">Analizando dominio...</h3>
-                  <p className="text-slate-400 text-sm font-medium mb-4">Escaneando stack, SEO, ads y oportunidades</p>
+                  <p className="text-slate-400 text-sm font-medium mb-4">Escaneando tecnología, SEO, ads y oportunidades</p>
                   <div className="w-64 h-1.5 bg-slate-800 rounded-full overflow-hidden">
                     <motion.div
                       animate={{ x: ['-100%', '100%'] }}
@@ -133,36 +122,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin 
                   </div>
                </div>
             </div>
-
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-indigo-100 rounded-full blur-3xl opacity-60"></div>
             <div className="absolute -bottom-10 -left-10 w-60 h-60 bg-purple-100 rounded-full blur-3xl opacity-60"></div>
           </motion.div>
-        </div>
-      </section>
-
-      {/* Stats */}
-      <section className="bg-slate-950 py-12 sm:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[
-              { label: 'Dominios Analizados', val: '12k+' },
-              { label: 'ROI Promedio', val: 'x2.4' },
-              { label: 'Tiempo de Análisis', val: '4.2s' },
-              { label: 'Confianza IA', val: '99%' },
-            ].map((stat, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="text-center"
-              >
-                <p className="text-3xl sm:text-4xl font-black text-white mb-1">{stat.val}</p>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{stat.label}</p>
-              </motion.div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -170,10 +132,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin 
       <section id="features" className="py-20 sm:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-16 sm:mb-20">
-            <h2 className="text-xs font-black text-indigo-600 uppercase tracking-[0.3em] mb-4">Superpoderes</h2>
-            <h3 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-6">Auditorías que parecen magia, pero son inteligencia.</h3>
+            <h2 className="text-xs font-black text-indigo-600 uppercase tracking-[0.3em] mb-4">Funcionalidades</h2>
+            <h3 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-6">Todo lo que necesitas para escalar tu estrategia de marketing.</h3>
             <p className="text-slate-600 font-medium leading-relaxed">
-              Nuestro modelo analiza miles de estrategias ganadoras para que tú solo tengas que introducir un dominio.
+              Desde el análisis de competencia hasta la generación de contenido y predicción de ROI. Todo en una sola plataforma.
             </p>
           </div>
 
@@ -181,33 +143,33 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin 
             {[
               {
                 icon: <Zap className="text-amber-500" />,
-                title: 'Tech Stack Discovery',
-                desc: 'Identificamos CMS, CRM, píxeles de trackeo y herramientas de marketing que usa tu cliente ideal.'
+                title: 'Análisis de Tecnología',
+                desc: 'Identificamos CMS, CRM, píxeles de seguimiento y herramientas de marketing de cualquier dominio.'
               },
               {
                 icon: <Target className="text-indigo-600" />,
-                title: 'Sales Hooks IA',
-                desc: 'Generamos frases de apertura y ganchos de venta basados en los puntos débiles reales del dominio.'
+                title: 'Ganchos de Venta con IA',
+                desc: 'Generamos frases de apertura y argumentos de venta basados en los puntos débiles reales del negocio.'
               },
               {
                 icon: <BarChart3 className="text-emerald-500" />,
                 title: 'Intensidad de Marketing',
-                desc: 'Medimos el nivel de inversión en Ads y presencia SEO para saber dónde atacar exactamente.'
+                desc: 'Medimos inversión en publicidad, presencia SEO y velocidad de contenido para identificar oportunidades.'
               },
               {
                 icon: <ShieldCheck className="text-blue-500" />,
                 title: 'Auditoría de Seguridad',
-                desc: 'Analizamos SSL, velocidad de carga y cumplimiento GDPR para ofrecer mejoras inmediatas.'
+                desc: 'Analizamos SSL, velocidad de carga y cumplimiento RGPD para ofrecer mejoras inmediatas al cliente.'
               },
               {
                 icon: <Users className="text-pink-500" />,
                 title: 'Enriquecimiento de Leads',
-                desc: 'Extraemos correos, redes sociales y contacto para que no pierdas tiempo buscando.'
+                desc: 'Extraemos datos de contacto, redes sociales y señales de crecimiento para cada empresa analizada.'
               },
               {
                 icon: <LineChart className="text-purple-600" />,
-                title: 'Roadmap de Crecimiento',
-                desc: 'Un plan paso a paso de lo que el dominio necesita para doblar su tasa de conversión.'
+                title: 'Predicción de ROI',
+                desc: 'Calculamos el retorno de inversión con benchmarks reales del sector y tres escenarios de proyección.'
               }
             ].map((f, i) => (
               <motion.div
@@ -232,61 +194,218 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin 
       {/* Social Proof / Testimonials */}
       <section id="testimonials" className="bg-slate-50 py-20 sm:py-32 rounded-[2rem] sm:rounded-[4rem]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            <div className="space-y-8">
-              <h3 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 leading-[1.1]">
-                No es solo una auditoría, es tu próxima <span className="text-indigo-600">oportunidad de cierre.</span>
-              </h3>
-              <div className="space-y-4">
-                {[
-                  'Cierra un 35% más de reuniones en frío.',
-                  'Posiciónate como un experto técnico al instante.',
-                  'Identifica oportunidades que el cliente ni conoce.',
-                  'Ahorra 2 horas de investigación por cada lead.'
-                ].map((txt, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.1 }}
-                    className="flex items-center gap-3"
-                  >
-                    <CheckCircle2 className="text-emerald-500 shrink-0" size={20} />
-                    <span className="font-bold text-slate-700">{txt}</span>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-xs font-black text-indigo-600 uppercase tracking-[0.3em] mb-4">Testimonios</h2>
+            <h3 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 leading-[1.1]">
+              Lo que dicen nuestros <span className="text-indigo-600">usuarios</span>
+            </h3>
+          </div>
 
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                quote: 'Antes tardaba horas en preparar una propuesta. Ahora, en lo que mi cliente me dice hola, ya tengo su auditoría lista. Mi tasa de cierre ha subido de forma radical.',
+                name: 'Carlos M.',
+                role: 'Director Comercial, Agencia Digital',
+                stars: 5
+              },
+              {
+                quote: 'El generador de contenido es brutal. Creo newsletters y posts para mis clientes en minutos en vez de horas. La calidad del copy con IA es impresionante.',
+                name: 'Laura R.',
+                role: 'Consultora de Marketing',
+                stars: 5
+              },
+              {
+                quote: 'El predictor de ROI me ayuda a justificar presupuestos con datos reales. Mis clientes confían más en mis propuestas desde que les muestro los escenarios.',
+                name: 'Miguel A.',
+                role: 'Growth Manager, SaaS B2B',
+                stars: 5
+              }
+            ].map((testimonial, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-200 relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-full blur-3xl"></div>
+                <div className="relative z-10">
+                  <div className="flex gap-1 mb-4">
+                    {Array.from({ length: testimonial.stars }).map((_, j) => (
+                      <Star key={j} size={16} className="text-amber-400 fill-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-sm font-medium text-slate-700 italic leading-relaxed mb-6">
+                    "{testimonial.quote}"
+                  </p>
+                  <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
+                    <img
+                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial.name)}&background=4f46e5&color=fff&bold=true&size=48`}
+                      alt={testimonial.name}
+                      className="w-10 h-10 rounded-full"
+                    />
+                    <div>
+                      <p className="font-bold text-slate-900 text-sm">{testimonial.name}</p>
+                      <p className="text-xs font-medium text-indigo-600">{testimonial.role}</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            {[
+              'Cierra un 35% más de reuniones en frío.',
+              'Posiciónate como experto técnico al instante.',
+              'Identifica oportunidades que el cliente ni conoce.',
+              'Ahorra 2 horas de investigación por cada lead.'
+            ].map((txt, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="flex flex-col items-center gap-2"
+              >
+                <CheckCircle2 className="text-emerald-500" size={24} />
+                <span className="font-bold text-slate-700 text-sm">{txt}</span>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" className="py-20 sm:py-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-xs font-black text-indigo-600 uppercase tracking-[0.3em] mb-4">Precios</h2>
+            <h3 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-6">
+              Un plan para cada etapa de tu negocio
+            </h3>
+            <p className="text-slate-600 font-medium">
+              Empieza gratis y escala cuando lo necesites. Sin permanencia.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {/* Starter */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-200 relative overflow-hidden"
+              className="p-8 rounded-[2rem] bg-white border border-slate-200 shadow-sm hover:shadow-xl transition-all"
             >
-               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full blur-3xl"></div>
-               <div className="relative z-10">
-                  <div className="flex gap-1 mb-4">
-                    {[1,2,3,4,5].map(i => (
-                      <Star key={i} size={16} className="text-amber-400 fill-amber-400" />
-                    ))}
+              <h4 className="text-lg font-black text-slate-900 mb-1">Starter</h4>
+              <p className="text-sm text-slate-500 font-medium mb-6">Para probar la plataforma</p>
+              <div className="mb-8">
+                <span className="text-5xl font-black text-slate-900">Gratis</span>
+              </div>
+              <button
+                onClick={onGetStarted}
+                className="w-full py-3 bg-slate-100 text-slate-700 font-bold text-sm uppercase tracking-wider rounded-xl hover:bg-slate-200 transition-all mb-8"
+              >
+                Crear cuenta gratis
+              </button>
+              <div className="space-y-3">
+                {[
+                  '5 análisis de dominio al mes',
+                  '10 generaciones de contenido',
+                  'Calculadora de ROI básica',
+                  'Historial de 30 días',
+                ].map((feature, i) => (
+                  <div key={i} className="flex items-center gap-3 text-sm text-slate-600">
+                    <Check size={16} className="text-emerald-500 shrink-0" />
+                    <span>{feature}</span>
                   </div>
-                  <p className="text-lg font-medium text-slate-700 italic leading-relaxed mb-6">
-                    "Antes tardaba horas en preparar una propuesta. Ahora, en lo que mi cliente me dice hola, ya tengo su auditoría lista. Mi tasa de cierre ha subido de forma radical."
-                  </p>
-                  <div className="flex items-center gap-4 pt-4 border-t border-slate-100">
-                    <img
-                      src="https://ui-avatars.com/api/?name=Carlos+M&background=4f46e5&color=fff&bold=true&size=48"
-                      alt="Carlos Méndez"
-                      className="w-12 h-12 rounded-full"
-                    />
-                    <div>
-                      <p className="font-black text-slate-900">Carlos Méndez</p>
-                      <p className="text-xs font-bold text-indigo-600">Head of Sales @ GrowthX</p>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Pro */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="p-8 rounded-[2rem] bg-slate-950 text-white shadow-2xl relative overflow-hidden scale-105"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl"></div>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-1">
+                  <h4 className="text-lg font-black">Pro</h4>
+                  <span className="px-3 py-1 bg-indigo-600 rounded-full text-[10px] font-black uppercase tracking-wider">Popular</span>
+                </div>
+                <p className="text-sm text-slate-400 font-medium mb-6">Para profesionales y freelancers</p>
+                <div className="mb-8">
+                  <span className="text-5xl font-black">€49</span>
+                  <span className="text-slate-400 font-medium">/mes</span>
+                </div>
+                <button
+                  onClick={onGetStarted}
+                  className="w-full py-3 bg-indigo-600 text-white font-bold text-sm uppercase tracking-wider rounded-xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-500/20 mb-8"
+                >
+                  Empezar prueba gratuita
+                </button>
+                <div className="space-y-3">
+                  {[
+                    '50 análisis de dominio al mes',
+                    'Generaciones ilimitadas de contenido',
+                    'Predictor de ROI avanzado (3 escenarios)',
+                    'Centro de Leads con filtros',
+                    'Exportar informes',
+                    'Historial ilimitado',
+                    'Soporte prioritario',
+                  ].map((feature, i) => (
+                    <div key={i} className="flex items-center gap-3 text-sm text-slate-300">
+                      <Check size={16} className="text-indigo-400 shrink-0" />
+                      <span>{feature}</span>
                     </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Agency */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="p-8 rounded-[2rem] bg-white border border-slate-200 shadow-sm hover:shadow-xl transition-all"
+            >
+              <h4 className="text-lg font-black text-slate-900 mb-1">Agencia</h4>
+              <p className="text-sm text-slate-500 font-medium mb-6">Para equipos y agencias</p>
+              <div className="mb-8">
+                <span className="text-5xl font-black text-slate-900">€149</span>
+                <span className="text-slate-400 font-medium">/mes</span>
+              </div>
+              <button
+                onClick={onGetStarted}
+                className="w-full py-3 bg-slate-100 text-slate-700 font-bold text-sm uppercase tracking-wider rounded-xl hover:bg-slate-200 transition-all mb-8"
+              >
+                Contactar ventas
+              </button>
+              <div className="space-y-3">
+                {[
+                  'Análisis ilimitados',
+                  'Todo lo de Pro incluido',
+                  'Hasta 5 miembros del equipo',
+                  'Informes con marca blanca',
+                  'API de integración',
+                  'Onboarding personalizado',
+                  'Gestor de cuenta dedicado',
+                ].map((feature, i) => (
+                  <div key={i} className="flex items-center gap-3 text-sm text-slate-600">
+                    <Check size={16} className="text-emerald-500 shrink-0" />
+                    <span>{feature}</span>
                   </div>
-               </div>
+                ))}
+              </div>
             </motion.div>
           </div>
         </div>
@@ -308,19 +427,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin 
                {
                  step: '01',
                  title: 'Introduce el Dominio',
-                 desc: 'Solo necesitas la URL del sitio web de tu lead o posible cliente. Sin integraciones complejas.',
+                 desc: 'Solo necesitas la URL del sitio web de tu lead o posible cliente. Sin integraciones ni configuración.',
                  icon: <Target className="text-white" size={24} />
                },
                {
                  step: '02',
-                 title: 'Análisis IA Profundo',
-                 desc: 'Nuestra IA analiza el stack técnico, la intensidad de marketing, vacíos de seguridad y ganchos de venta.',
+                 title: 'Análisis con IA',
+                 desc: 'Nuestra IA analiza el stack técnico, la intensidad de marketing, gaps de seguridad y genera ganchos de venta.',
                  icon: <Brain className="text-white" size={24} />
                },
                {
                  step: '03',
-                 title: 'Cierre de Venta',
-                 desc: 'Recibe un reporte accionable con frases de apertura personalizadas y ROI estimado para tu propuesta.',
+                 title: 'Cierra la Venta',
+                 desc: 'Recibe un informe accionable con frases de apertura personalizadas y ROI estimado para tu propuesta.',
                  icon: <Zap className="text-white" size={24} />
                }
              ].map((s, i) => (
@@ -360,14 +479,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin 
                 ¿Listo para dominar tu mercado?
               </h2>
               <p className="text-indigo-100 text-base sm:text-lg md:text-xl font-medium mb-8 sm:mb-12 max-w-2xl mx-auto">
-                Únete a los mejores marketers y agencias que ya usan la IA para ganar la batalla del lead.
+                Únete a los profesionales y agencias que ya usan la IA para ganar la batalla del lead.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button
                   onClick={onGetStarted}
                   className="px-10 py-5 bg-white text-indigo-600 font-black text-sm uppercase tracking-widest rounded-2xl hover:bg-indigo-50 transition-all shadow-xl active:scale-95"
                 >
-                  Registrarme gratis
+                  Empezar gratis
                 </button>
                 <button
                   onClick={onLogin}
@@ -376,7 +495,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin 
                   Ya tengo cuenta
                 </button>
               </div>
-              <p className="mt-8 text-indigo-200 text-[10px] font-bold uppercase tracking-[0.2em]">Sin tarjeta de crédito • Cumplimiento GDPR</p>
+              <p className="mt-8 text-indigo-200 text-xs font-bold uppercase tracking-widest">Sin tarjeta de crédito · Sin permanencia · Cumplimiento RGPD</p>
             </div>
           </div>
         </div>
@@ -396,7 +515,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin 
             <a href="#" className="hover:text-slate-900 transition-colors">Términos</a>
             <a href="#" className="hover:text-slate-900 transition-colors">Contacto</a>
           </div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">© {new Date().getFullYear()} MarketFlow AI. Inteligencia para escalar.</p>
+          <p className="text-xs font-bold text-slate-400">© {new Date().getFullYear()} MarketFlow AI</p>
         </div>
       </footer>
     </div>

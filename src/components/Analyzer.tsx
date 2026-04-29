@@ -182,11 +182,11 @@ export function Analyzer() {
       <div className="lg:col-span-9 space-y-12">
         <div className="text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-full text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-2">
-            <Shield size={12} /> GDPR Compliant Scraping
+            <Shield size={12} /> Cumplimiento RGPD
           </div>
-          <h2 className="text-4xl font-extrabold tracking-tight text-slate-900">Deep <span className="text-indigo-600">Scraper</span> & Business Intel</h2>
+          <h2 className="text-4xl font-extrabold tracking-tight text-slate-900">Analizador de <span className="text-indigo-600">Negocios</span> con IA</h2>
           <p className="text-slate-500 max-w-xl mx-auto font-medium">
-            Motor avanzado de extracción de datos y detección de oportunidades. Escanea el ADN digital de cualquier empresa en segundos.
+            Analiza cualquier dominio y detecta oportunidades de venta. Obtén un informe completo de la presencia digital de cualquier empresa en segundos.
           </p>
         </div>
 
@@ -238,7 +238,7 @@ export function Analyzer() {
                 </>
               ) : (
                 <>
-                  <Zap size={22} className="fill-current" /> Ejecutar Deep Scraping IA
+                  <Zap size={22} className="fill-current" /> Analizar con IA
                 </>
               )}
             </button>
@@ -296,7 +296,7 @@ export function Analyzer() {
 
               <div className="p-8 rounded-2xl bg-slate-950 border border-slate-800 shadow-2xl flex flex-col items-center justify-center text-center relative overflow-hidden group md:col-span-3">
                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
-                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Lead Intent</p>
+                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Intención de Compra</p>
                  <p className="text-6xl font-black text-white group-hover:scale-110 transition-transform">
                    {result?.hot_lead_score}<span className="text-2xl text-slate-600">%</span>
                  </p>
@@ -310,7 +310,7 @@ export function Analyzer() {
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
               <div className="p-6 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4 min-w-0">
                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Cpu size={14} className="text-indigo-600" /> Stack & Security
+                  <Cpu size={14} className="text-indigo-600" /> Tecnología y Seguridad
                 </h4>
                 <div className="space-y-3">
                   <div className="flex justify-between text-xs font-medium border-b border-slate-50 pb-2">
@@ -324,7 +324,7 @@ export function Analyzer() {
                     </span>
                   </div>
                   <div className="pt-2">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-2">GDPR Compliance</p>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-2">Cumplimiento RGPD</p>
                     <span className={`px-2 py-1 rounded text-[9px] font-bold uppercase ${
                       result?.tecnologia?.cumplimiento_gdpr === 'alto' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
                     }`}>{result?.tecnologia?.cumplimiento_gdpr}</span>
@@ -334,7 +334,7 @@ export function Analyzer() {
 
               <div className="p-6 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4 min-w-0">
                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Activity size={14} className="text-pink-600" /> Growth Signals
+                  <Activity size={14} className="text-pink-600" /> Señales de Crecimiento
                 </h4>
                 <div className="space-y-4 overflow-hidden">
                   <div className={`p-2 rounded border ${result?.senales_crecimiento?.contratacion_activa ? 'bg-indigo-50 border-indigo-100' : 'bg-slate-50 border-slate-100'}`}>
@@ -352,17 +352,17 @@ export function Analyzer() {
 
               <div className="p-6 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4 min-w-0">
                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Target size={14} className="text-emerald-600" /> Marketing Intensity
+                  <Target size={14} className="text-emerald-600" /> Intensidad de Marketing
                 </h4>
                 <div className="space-y-4 overflow-hidden">
                    <div>
-                    <div className="flex justify-between text-[10px] font-bold mb-1 uppercase text-slate-400">SEO Health</div>
+                    <div className="flex justify-between text-[10px] font-bold mb-1 uppercase text-slate-400">Salud SEO</div>
                     <div className="w-full h-1.5 bg-slate-100 rounded-full">
                       <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${result?.marketing_intensity?.seo_score || 0}%` }} />
                     </div>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <span className="text-[9px] font-bold text-slate-400 uppercase">Facebook/Google Ads:</span>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase">Publicidad Ads:</span>
                     <span className="text-xs font-semibold text-slate-900 break-words leading-tight">{result?.marketing_intensity?.ads_presence}</span>
                   </div>
                 </div>
@@ -370,7 +370,7 @@ export function Analyzer() {
 
               <div className="p-6 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4 min-w-0">
                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Mail size={14} className="text-indigo-600" /> Contact Info
+                  <Mail size={14} className="text-indigo-600" /> Información de Contacto
                 </h4>
                 <div className="space-y-2 overflow-hidden">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-700 break-all">
@@ -395,13 +395,13 @@ export function Analyzer() {
                </div>
                <div className="relative z-10 flex flex-col md:flex-row gap-8 items-start">
                   <div className="space-y-3 flex-1 min-w-0">
-                     <h4 className="text-xl font-black tracking-tight break-words">Growth Hypothesis: <span className="text-indigo-200">{result?.hipotesis_crecimiento?.problema_raiz}</span></h4>
+                     <h4 className="text-xl font-black tracking-tight break-words">Hipótesis de Crecimiento: <span className="text-indigo-200">{result?.hipotesis_crecimiento?.problema_raiz}</span></h4>
                      <p className="text-sm font-medium text-indigo-50 leading-relaxed max-w-2xl break-words">
                        {result?.hipotesis_crecimiento?.solucion_propuesta}
                      </p>
                   </div>
                   <button className="md:ml-auto shrink-0 px-6 py-3 bg-white text-indigo-600 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all shadow-lg active:scale-95">
-                    Activar Estrategia
+                    Ver Estrategia
                   </button>
                </div>
             </div>
