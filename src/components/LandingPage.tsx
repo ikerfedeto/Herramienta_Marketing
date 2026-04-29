@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'motion/react';
 import { 
   Sparkles, 
@@ -338,7 +337,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin 
             <a href="#" className="hover:text-slate-900">Términos</a>
             <a href="#" className="hover:text-slate-900">Contacto</a>
           </div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">© 2024 MarketFlow AI. Intelligence for Scale.</p>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">© {new Date().getFullYear()} MarketFlow AI. Intelligence for Scale.</p>
         </div>
       </footer>
     </div>

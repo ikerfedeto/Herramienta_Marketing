@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   auth, 
 } from '../lib/firebase';
+import type { AuthMode } from '../types';
 import { 
   signInWithPopup, 
   GoogleAuthProvider, 
@@ -22,11 +23,11 @@ import {
 
 interface AuthProps {
   onSuccess: () => void;
-  initialMode?: 'login' | 'register';
+  initialMode?: AuthMode;
 }
 
 export const Auth: React.FC<AuthProps> = ({ onSuccess, initialMode = 'login' }) => {
-  const [mode, setMode] = useState<'login' | 'register' | 'forgot'>(initialMode);
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -40,8 +41,8 @@ export const Auth: React.FC<AuthProps> = ({ onSuccess, initialMode = 'login' }) 
     try {
       await signInWithPopup(auth, provider);
       onSuccess();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al iniciar sesión con Google');
     } finally {
       setLoading(false);
     }
@@ -64,8 +65,8 @@ export const Auth: React.FC<AuthProps> = ({ onSuccess, initialMode = 'login' }) 
         await sendPasswordResetEmail(auth, email);
         setSuccess('¡Email de recuperación enviado! Revisa tu bandeja de entrada.');
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error de autenticación');
     } finally {
       setLoading(false);
     }

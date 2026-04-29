@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import { useState, useEffect } from 'react';
 import { auth, db } from './lib/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -16,15 +11,16 @@ import { LandingPage } from './components/LandingPage';
 import { Auth } from './components/Auth';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles } from 'lucide-react';
+import type { AppUser, AuthView, AuthMode } from './types';
+import { toAppUser } from './types';
 
 export default function App() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<'landing' | 'auth' | 'app'>('landing');
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [view, setView] = useState<AuthView>('landing');
+  const [authMode, setAuthMode] = useState<AuthMode>('login');
 
-  // Connection test to avoid "client is offline" errors on startup
   useEffect(() => {
     async function testConnection() {
       try {
@@ -39,14 +35,14 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
         try {
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
           if (!userDoc.exists()) {
-            await setDoc(doc(db, 'users', user.uid), {
-              email: user.email,
-              displayName: user.displayName,
+            await setDoc(doc(db, 'users', firebaseUser.uid), {
+              email: firebaseUser.email,
+              displayName: firebaseUser.displayName,
               createdAt: serverTimestamp(),
               onboardingComplete: false
             });
@@ -54,7 +50,7 @@ export default function App() {
         } catch (error) {
           console.error("User doc init error", error);
         }
-        setUser(user);
+        setUser(toAppUser(firebaseUser));
         setView('app');
       } else {
         setUser(null);
@@ -70,7 +66,7 @@ export default function App() {
     setView('landing');
   };
 
-  const navigateToAuth = (mode: 'login' | 'register') => {
+  const navigateToAuth = (mode: AuthMode) => {
     setAuthMode(mode);
     setView('auth');
   };

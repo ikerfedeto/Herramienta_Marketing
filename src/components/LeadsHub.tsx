@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Users, Mail, Phone, MapPin, Search, Filter, MoreHorizontal, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { Mail, Phone, Search, Filter, MoreHorizontal, CheckCircle2, XCircle, Clock } from 'lucide-react';
 
 export function LeadsHub() {
   const [searchTerm, setSearchTerm] = useState('');

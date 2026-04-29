@@ -1,14 +1,13 @@
 import { motion } from 'motion/react';
 import { 
-  TrendingUp, Users, Target, Activity, 
+  TrendingUp, Target, Activity, 
   ArrowUpRight, Info, ShieldCheck, Sparkles, 
   Zap, PieChart, BarChart3, Database,
-  Eye, MousePointer2, Wallet
+  Eye, Wallet
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, 
-  Tooltip, ResponsiveContainer, BarChart, Bar, 
-  Cell
+  Tooltip, ResponsiveContainer
 } from 'recharts';
 
 const growthData = [
@@ -104,7 +103,7 @@ export function Dashboard() {
           <button className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all text-slate-600 shadow-sm relative group">
             <Info size={18} />
             <div className="absolute top-full mt-2 right-0 w-64 p-4 bg-slate-900 text-white rounded-2xl text-[10px] opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none shadow-2xl">
-              Nuestros datos combinan señales directas de tu web con benchmarks de mercado procesados por GPT-4o.
+              Nuestros datos combinan señales directas de tu web con benchmarks de mercado procesados por IA Gemini.
             </div>
           </button>
         </div>

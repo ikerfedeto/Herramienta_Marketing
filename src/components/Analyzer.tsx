@@ -1,24 +1,25 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Search, Globe, Mail, BarChart2, CheckCircle2, 
-  AlertCircle, Loader2, Target, Users, Zap, 
-  Shield, Cpu, ExternalLink, Phone, MapPin, 
-  Activity, Sparkles, History, Clock, ChevronRight,
-  Trash2
+  Search, Globe, Mail,
+  AlertCircle, Loader2, Target, Zap, 
+  Shield, Cpu, Phone, MapPin, 
+  Activity, Sparkles, History, Clock,
+  Trash2, ExternalLink
 } from 'lucide-react';
 import { analyzeBusiness } from '../services/geminiService';
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp, query, where, orderBy, limit, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import type { AnalysisHistoryItem } from '../types';
 
 export function Analyzer() {
   const [input, setInput] = useState('');
   const [description, setDescription] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<AnalysisHistoryItem | null>(null);
   const [error, setError] = useState('');
   const [step, setStep] = useState('');
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<AnalysisHistoryItem[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export function Analyzer() {
         limit(10)
       );
       const querySnapshot = await getDocs(q);
-      const docs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const docs = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() })) as AnalysisHistoryItem[];
       setHistory(docs);
     } catch (err) {
       console.error('Error fetching history:', err);
@@ -82,28 +83,29 @@ export function Analyzer() {
         throw new Error('La IA no pudo estructurar los datos del negocio.');
       }
       
-      setResult(data);
+      const analysisItem: AnalysisHistoryItem = { ...data, id: '', website: input, createdAt: new Date() };
+      setResult(analysisItem);
       
-      // Guardar en Firestore y actualizar historial local
       if (auth.currentUser) {
-        const path = 'analyses';
+        const firestorePath = 'analyses';
         try {
-          const docRef = await addDoc(collection(db, path), {
+          const docRef = await addDoc(collection(db, firestorePath), {
             ...data,
             website: input,
             ownerId: auth.currentUser.uid,
             createdAt: serverTimestamp()
           });
           
-          // Actualizar historial localmente para evitar re-fetch
-          setHistory(prev => [{ id: docRef.id, ...data, website: input, createdAt: new Date() }, ...prev.slice(0, 9)]);
+          const savedItem: AnalysisHistoryItem = { ...data, id: docRef.id, website: input, createdAt: new Date() };
+          setResult(savedItem);
+          setHistory(prev => [savedItem, ...prev.slice(0, 9)]);
         } catch (error) {
-          handleFirestoreError(error, OperationType.CREATE, path);
+          handleFirestoreError(error, OperationType.CREATE, firestorePath);
         }
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Analyzer Error:', err);
-      const errorMessage = err.message || 'Error desconocido';
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
       setError(`Error al analizar: ${errorMessage}. Revisa la URL o descripción.`);
     } finally {
       setAnalyzing(false);

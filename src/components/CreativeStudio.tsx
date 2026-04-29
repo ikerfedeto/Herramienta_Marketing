@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, MessageSquare, Mail, Palette, Megaphone, Loader2, Copy, Check, ImageIcon } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { generateMarketingAsset, generateCreativeImage } from '../services/geminiService';
+import type { BusinessInfo } from '../types';
 
 export function CreativeStudio() {
-  const [businessInfo, setBusinessInfo] = useState({ name: '', valueProposition: '', sector: '' });
+  const [businessInfo, setBusinessInfo] = useState<BusinessInfo>({ name: '', valueProposition: '', sector: '' });
   const [selectedType, setSelectedType] = useState('slogan');
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState('');
@@ -172,9 +173,15 @@ export function CreativeStudio() {
                     <motion.div 
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="rounded-xl overflow-hidden border border-slate-200 shadow-lg aspect-square max-w-sm mx-auto"
+                      className="relative rounded-xl overflow-hidden border border-slate-200 shadow-lg aspect-square max-w-sm mx-auto group"
                     >
-                      <img src={imageUrl} alt="AI Generated" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      <img src={imageUrl} alt="Contenido creativo generado por IA" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      <button 
+                        onClick={downloadImage} 
+                        className="absolute bottom-3 right-3 px-3 py-1.5 bg-white/90 backdrop-blur-sm border border-slate-200 rounded-lg text-[10px] font-bold text-slate-700 uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+                      >
+                        Descargar
+                      </button>
                     </motion.div>
                   )}
                   {result && (

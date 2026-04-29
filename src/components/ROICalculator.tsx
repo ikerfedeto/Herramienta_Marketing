@@ -1,28 +1,12 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  TrendingUp, Calculator, PieChart, Info, Loader2, Sparkles, 
+  TrendingUp, Calculator, Info, Loader2, Sparkles, 
   Target, Zap, AlertCircle, BarChart3, Clock, Rocket, ShieldCheck
 } from 'lucide-react';
 import { predictROI } from '../services/geminiService';
-
-interface ROIParams {
-  investment: number;
-  channel: string;
-  sector: string;
-  location: string;
-  avgTicket: number;
-  digitalLevel: 'bajo' | 'medio' | 'alto';
-}
-
-const SECTOR_BENCHMARKS: Record<string, { ctr: number; cr: number; cpc: number }> = {
-  'SaaS': { ctr: 2.1, cr: 3.5, cpc: 1.5 },
-  'E-commerce': { ctr: 1.8, cr: 2.2, cpc: 0.8 },
-  'Inmobiliaria': { ctr: 2.5, cr: 1.2, cpc: 2.5 },
-  'Salud': { ctr: 3.2, cr: 4.1, cpc: 1.2 },
-  'Educación': { ctr: 2.8, cr: 3.0, cpc: 0.9 },
-  'General': { ctr: 2.0, cr: 2.0, cpc: 1.0 },
-};
+import type { ROIParams, ROIPrediction } from '../types';
+import { SECTOR_BENCHMARKS } from '../types';
 
 export function ROICalculator() {
   const [params, setParams] = useState<ROIParams>({
@@ -35,7 +19,7 @@ export function ROICalculator() {
   });
 
   const [calculating, setCalculating] = useState(false);
-  const [aiResult, setAiResult] = useState<any>(null);
+  const [aiResult, setAiResult] = useState<ROIPrediction | null>(null);
 
   // Deterministic local calculation for real-time feedback
   const localProjection = useMemo(() => {
