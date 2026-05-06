@@ -1,0 +1,92 @@
+/* ===== CARTA HERO ===== */
+.carta-hero {
+  padding: 180px 60px 80px;
+  text-align: center; position: relative; z-index: 1;
+}
+.carta-hero-content { max-width: 800px; margin: 0 auto; }
+
+/* ===== TABS ===== */
+.carta-body {
+  padding: 0 60px 160px;
+  max-width: 1400px; margin: 0 auto;
+  position: relative; z-index: 1;
+}
+.carta-tabs {
+  display: flex; gap: 10px; justify-content: center;
+  margin-bottom: 60px; flex-wrap: wrap;
+}
+.carta-tab {
+  font-family: var(--font-display); font-size: 0.65rem;
+  font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
+  padding: 14px 34px; border-radius: 40px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-dim); cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.carta-tab:hover {
+  border-color: rgba(255,45,85,0.2);
+  color: var(--star-white);
+}
+.carta-tab.active {
+  background: linear-gradient(135deg, var(--neon-red), #e91e63);
+  border-color: var(--neon-red);
+  color: white;
+  box-shadow: 0 8px 40px rgba(255,45,85,0.25);
+}
+
+/* ===== MENU GRID ===== */
+.carta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+.menu-card {
+  background: linear-gradient(165deg, rgba(15,23,60,0.5), rgba(5,10,30,0.8));
+  border: 1px solid var(--border-subtle);
+  border-radius: 24px; overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex; flex-direction: column;
+}
+.menu-card:hover {
+  transform: translateY(-10px);
+  border-color: rgba(255,45,85,0.12);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.3), 0 0 40px rgba(255,45,85,0.05);
+}
+.menu-card-visual {
+  height: 180px; display: flex; align-items: center; justify-content: center;
+  font-size: 5rem;
+  background: linear-gradient(180deg, rgba(255,45,85,0.03), transparent);
+  position: relative;
+}
+.menu-card-visual::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 1px; background: linear-gradient(90deg, transparent, var(--border-subtle), transparent);
+}
+.menu-card-body { padding: 24px 28px 30px; flex: 1; display: flex; flex-direction: column; }
+.menu-card-tag {
+  font-family: var(--font-accent); font-size: 0.6rem;
+  font-weight: 600; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--neon-blue); margin-bottom: 10px;
+}
+.menu-card-name {
+  font-family: var(--font-display); font-size: 0.9rem;
+  font-weight: 800; letter-spacing: 2px; margin-bottom: 10px;
+}
+.menu-card-desc {
+  font-size: 0.85rem; color: var(--text-dim);
+  line-height: 1.7; flex: 1; margin-bottom: 16px;
+}
+.menu-card-price {
+  font-family: var(--font-display); font-size: 1.5rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--neon-red), var(--neon-purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@media (max-width: 768px) {
+  .carta-hero { padding: 140px 20px 60px; }
+  .carta-body { padding: 0 20px 100px; }
+  .carta-grid { grid-template-columns: 1fr; }
+}
